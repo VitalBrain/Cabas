@@ -212,6 +212,13 @@ h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0;letter-spac
 .menu button.red{color:var(--warn)}
 .note-box{font-size:13px;color:var(--muted);background:var(--bg);border-radius:12px;padding:10px 12px;margin-top:10px}
 
+/* ---------- bouton Ko-fi ---------- */
+#kofiBtn{position:fixed;right:16px;bottom:calc(22px + var(--safe-b));z-index:40;height:46px;padding:0 14px 0 12px;border-radius:23px;background:var(--card);border:1.5px solid var(--line);box-shadow:var(--shadow);display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;opacity:.92;transition:transform .15s,opacity .15s}
+#kofiBtn .cup{font-size:20px;line-height:1}
+#kofiBtn:hover,#kofiBtn:active{opacity:1;transform:translateY(-1px);color:var(--ink)}
+#scrHome:not(.hidden) ~ #kofiBtn .klbl{display:none}
+#scrHome:not(.hidden) ~ #kofiBtn{width:46px;padding:0;justify-content:center}
+@media (min-width:600px){#scrHome:not(.hidden) ~ #kofiBtn .klbl{display:inline}#scrHome:not(.hidden) ~ #kofiBtn{width:auto;padding:0 14px 0 12px}}
 /* ---------- toast ---------- */
 #toast{position:fixed;left:50%;bottom:calc(88px + var(--safe-b));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:14px;font-weight:500;z-index:60;opacity:0;pointer-events:none;transition:.22s;max-width:calc(100% - 32px);display:flex;gap:14px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.2)}
 #toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
@@ -275,6 +282,7 @@ h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0;letter-spac
   </main>
 </section>
 
+<a id="kofiBtn" class="hidden" href="https://ko-fi.com/cabas" target="_blank" rel="noopener" aria-label="Soutenir Cabas sur Ko-fi" title="Soutenir Cabas sur Ko-fi"><span class="cup">☕</span><span class="klbl">Soutenir</span></a>
 <div id="scrim"></div>
 <div id="sheet" role="dialog" aria-modal="true"></div>
 <div id="toast"><span id="toastMsg"></span><button id="toastAct" class="hidden"></button></div>
@@ -1051,6 +1059,7 @@ const pendingJoin = () => { try { return sessionStorage.getItem("cabas.join"); }
 
 function show(id) {
   ["scrLogin", "scrHome", "scrList"].forEach(s => $("#" + s).classList.toggle("hidden", s !== id));
+  $("#kofiBtn").classList.toggle("hidden", id === "scrLogin");
   window.scrollTo(0, 0);
 }
 
