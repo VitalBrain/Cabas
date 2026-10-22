@@ -2,18 +2,37 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ---------- Matrice d'Eisenhower ----------
-    // Chaque compte Google lit et écrit uniquement ses propres tâches.
+    // Matrice d'Eisenhower : chaque compte lit et écrit uniquement ses propres tâches
     match /users/{userId}/tasks/{taskId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // ---------- Carnet Muscu ----------
+    // Carnet muscu : chaque compte lit et écrit uniquement ses propres séances
     match /muscu/{uid}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // ---------- Cabas : listes de courses partagées ----------
+    // 3615 JEUX : chaque compte lit et écrit uniquement ses propres scores
+    match /jeux3615_users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // INFLUENCEURS: Base de donnée sans numéros
+    match /users/{uid}/influenceurs/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Forma : réglages, liaison Strava, activités et séances planifiées de chaque compte
+    match /users/{uid}/forme/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    match /users/{uid}/formeActivities/{actId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    match /users/{uid}/formePlans/{planId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Cabas : listes de courses partagées entre plusieurs comptes Google
     function signedIn() {
       return request.auth != null && request.auth.token.email != null;
     }
@@ -26,7 +45,6 @@ service cloud.firestore {
     }
 
     match /cabas_lists/{listId} {
-      // Une liste est visible par les comptes Google listés dans memberEmails.
       allow read: if signedIn() && myEmail() in resource.data.memberEmails;
 
       allow create: if signedIn()
@@ -34,11 +52,9 @@ service cloud.firestore {
         && myEmail() in request.resource.data.memberEmails;
 
       allow update: if signedIn() && (
-        // Un membre peut tout modifier (nom, membres, compteur), sauf le propriétaire.
         (myEmail() in resource.data.memberEmails
           && request.resource.data.ownerUid == resource.data.ownerUid)
         ||
-        // Rejoindre via un lien d'invitation : on ne peut ajouter que soi-même.
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberEmails', 'joinCode', 'members'])
           && request.resource.data.joinCode is string
           && get(/databases/$(database)/documents/cabas_invites/$(request.resource.data.joinCode)).data.listId == listId
@@ -50,20 +66,17 @@ service cloud.firestore {
 
       allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
 
-      // Articles : lisibles et modifiables par tous les membres de la liste.
       match /items/{itemId} {
         allow read, write: if isListMember(listId);
       }
     }
 
-    // Codes d'invitation (lien de partage).
     match /cabas_invites/{code} {
       allow get: if signedIn();
       allow create: if isListMember(request.resource.data.listId);
       allow delete: if isListMember(resource.data.listId);
     }
 
-    // Produits, unités et habitudes personnels de chaque compte.
     match /cabas_users/{uid}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
