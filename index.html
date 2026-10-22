@@ -136,6 +136,30 @@ h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0;letter-spac
 .ptile.inlist{outline:2px solid var(--accent);outline-offset:-2px}
 .ptile .q{position:absolute;top:6px;right:6px}
 .ssn{position:absolute;top:5px;left:7px;font-size:13px}
+.rrow{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 12px;margin:0 -2px;scrollbar-width:none;scroll-snap-type:x mandatory}
+.rrow::-webkit-scrollbar{display:none}
+.rrow .rcard{flex:0 0 78%;max-width:300px;scroll-snap-align:start}
+.rlist{display:grid;gap:10px}
+.rcard{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:12px;text-align:left;width:100%}
+.rcard:active{transform:scale(.98)}
+.rem{font-size:30px;width:52px;height:52px;border-radius:14px;background:var(--bg2);display:grid;place-items:center;flex:none}
+.rinfo{flex:1;min-width:0}
+.rinfo b{display:block;font-size:15px;line-height:1.25}
+.rinfo span{font-size:12px;color:var(--muted)}
+.rinfo .rs{color:var(--accent);font-weight:600}
+.ings{display:grid;gap:2px;margin-top:8px}
+.ing{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:12px;cursor:pointer}
+.ing input{position:absolute;opacity:0;pointer-events:none}
+.ing .box{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.ing.on .box{background:var(--accent);border-color:var(--accent)}
+.ing.on .box::after{content:"✓";color:var(--accent-ink);font-size:13px;font-weight:700}
+.ing .iic{font-size:24px;width:30px;text-align:center}
+.ing .inm{flex:1;min-width:0;font-weight:600}
+.ing .inm small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.ing .iq{font-weight:700;color:var(--accent);font-size:14px;white-space:nowrap}
+.ing:not(.on){opacity:.6}
+.steps{margin:0;padding-left:22px;display:grid;gap:8px;color:var(--ink)}
+.steps li{padding-left:4px}
 .seasonhead{background:var(--accent-soft);border-radius:14px;padding:10px 14px;margin:0 0 10px;font-size:14px}
 .seasonhead b{font-family:Fraunces,Georgia,serif;font-size:17px}
 .ptile.create{background:var(--accent-soft);box-shadow:none;border:1.5px dashed var(--accent)}
@@ -458,6 +482,7 @@ Feta|🧀|cr|pc|fromage|
 Parmesan|🧀|cr|g|fromage|
 Chèvre|🧀|cr|pc|fromage|
 Raclette|🧀|cr|g|fromage|
+Reblochon|🧀|cr|pc|fromage|
 Pâte feuilletée|🥧|cr|pc|pate tarte|
 Pâte brisée|🥧|cr|pc|pate tarte|
 Pâte à pizza|🍕|cr|pc|pate|
@@ -493,6 +518,7 @@ Nouilles|🍜|es|paquet|ramen|
 Lentilles|🫘|es|g|legumineuse|
 Pois chiches|🫘|es|boite|legumineuse|
 Haricots rouges|🫘|es|boite|legumineuse|
+Lait de coco|🥥|es|boite|curry|
 Farine|🌾|es|kg||
 Huile d'olive|🫒|es|bouteille||
 Huile de tournesol|🌻|es|bouteille||
@@ -647,6 +673,195 @@ const isFruit = p => p.cat === "fl" && /\b(fruit|agrume)\b/.test(p.tags || "");
 const ICONS = ("🍎 🍏 🍐 🍊 🍋 🍌 🍉 🍇 🍓 🫐 🍈 🍒 🍑 🥭 🍍 🥥 🥝 🍅 🍆 🥑 🫛 🥦 🥬 🥒 🌶️ 🫑 🌽 🥕 🫒 🧄 🧅 🥔 🍠 🫚 🍄 🌰 🥜 🫘 🌿 🌱 🍞 🥐 🥖 🫓 🥨 🥯 🥞 🧇 🧀 🍖 🍗 🥩 🥓 🍔 🍟 🍕 🌭 🥪 🌮 🌯 🥙 🧆 🥚 🍳 🥘 🍲 🥣 🥗 🍿 🧈 🧂 🥫 🍱 🍘 🍙 🍚 🍛 🍜 🍝 🍢 🍣 🍤 🥟 🦀 🦞 🦐 🦑 🦪 🐟 🍦 🍧 🍨 🍩 🍪 🎂 🍰 🧁 🥧 🍫 🍬 🍭 🍮 🍯 🍼 🥛 ☕ 🫖 🍵 🧃 🥤 🧋 🍶 🍾 🍷 🍸 🍹 🍺 🥂 🧊 💧 🫧 🫙 🧴 🧼 🧽 🧻 🪥 🪒 🧺 🧹 🧪 🧷 💊 🩹 🌸 💡 🔋 🕯️ 🔥 🗑️ 🛍️ 📜 🎁 🎈 🐾 🐈 🐕 🐟 🌻 💐 🪴 🛒 🧺 📦 ✏️ 📰 🧦 👕 🧤 🧸 ⭐").split(" ");
 const LIST_ICONS = ["🛒", "🧺", "🏠", "🥖", "🥕", "🎉", "🍷", "🏖️", "🎄", "🍕", "💊", "🐾", "🍼", "🧽", "🏕️", "🎂"];
 
+/* ---------- recettes de saison ----------
+   ingrédient : [produit, quantité pour `serves` personnes, unité, "p" = placard (décoché par défaut)] */
+const RECIPES = [
+  // ----- automne -----
+  { id: "veloute-potimarron", name: "Velouté de potimarron & châtaignes", icon: "🎃", months: "9-12", time: "40 min", serves: 4,
+    ing: [["Potimarron", 1, "pc"], ["Oignons", 1, "pc"], ["Châtaignes", 100, "g"], ["Crème liquide", 1, "brique"], ["Bouillon", 1, "boite", "p"], ["Huile d'olive", 1, "bouteille", "p"], ["Sel", 1, "paquet", "p"], ["Poivre", 1, "pot", "p"]],
+    steps: ["Lave le potimarron (inutile de l'éplucher), retire les graines et coupe-le en cubes.", "Fais revenir l'oignon émincé dans un filet d'huile, ajoute la courge et les châtaignes.", "Couvre d'eau avec le bouillon et laisse cuire 25 min.", "Mixe avec la crème, sale, poivre. Sers bien chaud."] },
+  { id: "risotto-champignons", name: "Risotto aux champignons", icon: "🍄", months: "9-11", time: "35 min", serves: 4,
+    ing: [["Riz", 300, "g"], ["Champignons", 400, "g"], ["Oignons", 1, "pc"], ["Parmesan", 80, "g"], ["Vin blanc", 10, "cl"], ["Beurre", 30, "g"], ["Bouillon", 1, "boite", "p"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Prépare 1 L de bouillon chaud.", "Fais dorer les champignons émincés, réserve-les.", "Fais revenir l'oignon, ajoute le riz jusqu'à ce qu'il devienne translucide, puis déglace au vin blanc.", "Ajoute le bouillon louche par louche en remuant (environ 18 min).", "Hors du feu, incorpore champignons, beurre et parmesan."] },
+  { id: "salade-figues-chevre", name: "Salade figues, chèvre & noix", icon: "🥗", months: "8-10", time: "15 min", serves: 4,
+    ing: [["Figues", 6, "pc"], ["Chèvre", 1, "pc"], ["Roquette", 1, "sachet"], ["Noix", 1, "sachet"], ["Miel", 1, "pot", "p"], ["Vinaigre", 1, "bouteille", "p"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Coupe les figues en quartiers et le chèvre en rondelles.", "Fais une vinaigrette huile, vinaigre et une cuillère de miel.", "Dresse la roquette, les figues, le chèvre et les noix concassées, puis arrose de vinaigrette."] },
+  { id: "crumble-pommes-poires", name: "Crumble pommes-poires", icon: "🍏", months: "9-2", time: "45 min", serves: 6,
+    ing: [["Pommes", 4, "pc"], ["Poires", 2, "pc"], ["Farine", 150, "g"], ["Beurre", 100, "g"], ["Sucre", 100, "g", "p"]],
+    steps: ["Préchauffe le four à 180 °C.", "Épluche et coupe les fruits en dés dans un plat.", "Sable du bout des doigts farine, sucre et beurre froid.", "Parsème sur les fruits et enfourne 30 min."] },
+  { id: "gratin-chou-fleur", name: "Gratin de chou-fleur", icon: "🥦", months: "9-4", time: "45 min", serves: 4,
+    ing: [["Chou-fleur", 1, "pc"], ["Lait", 0.5, "l"], ["Beurre", 40, "g"], ["Farine", 40, "g"], ["Emmental râpé", 1, "sachet"], ["Sel", 1, "paquet", "p"], ["Poivre", 1, "pot", "p"]],
+    steps: ["Cuis les bouquets de chou-fleur 10 min à l'eau salée.", "Fais une béchamel : beurre fondu, farine, puis le lait en fouettant jusqu'à épaississement.", "Mets le chou-fleur dans un plat, nappe de béchamel et couvre de fromage.", "Gratine 20 min à 200 °C."] },
+  { id: "potee-butternut-lentilles", name: "Curry de butternut & lentilles", icon: "🍛", months: "9-1", time: "40 min", serves: 4,
+    ing: [["Courge butternut", 1, "pc"], ["Lentilles", 200, "g"], ["Oignons", 1, "pc"], ["Gingembre", 30, "g"], ["Lait de coco", 1, "boite"], ["Riz", 300, "g"], ["Épices", 1, "pot", "p"]],
+    steps: ["Fais revenir oignon et gingembre râpé avec 2 c. à café de curry.", "Ajoute la butternut en cubes, les lentilles rincées, le lait de coco et 40 cl d'eau.", "Laisse mijoter 25 min, jusqu'à ce que les lentilles soient tendres.", "Sers avec du riz."] },
+  // ----- hiver -----
+  { id: "pot-au-feu", name: "Pot-au-feu", icon: "🍲", months: "11-3", time: "3 h", serves: 6,
+    ing: [["Bœuf", 1500, "g"], ["Carottes", 0.8, "kg"], ["Poireaux", 3, "pc"], ["Navets", 1, "botte"], ["Céleri-rave", 1, "pc"], ["Pommes de terre", 1, "kg"], ["Oignons", 2, "pc"], ["Moutarde", 1, "pot", "p"], ["Sel", 1, "paquet", "p"]],
+    steps: ["Mets la viande dans une grande cocotte d'eau froide, porte à ébullition et écume.", "Ajoute les oignons et laisse frémir 2 h.", "Ajoute carottes, poireaux, navets et céleri en morceaux : 45 min de plus.", "Cuis les pommes de terre à part dans un peu de bouillon.", "Sers avec moutarde et gros sel ; garde le bouillon pour une soupe."] },
+  { id: "endives-jambon", name: "Endives au jambon", icon: "🥬", months: "10-4", time: "1 h", serves: 4,
+    ing: [["Endives", 8, "pc"], ["Jambon", 8, "tranche"], ["Lait", 0.5, "l"], ["Beurre", 40, "g"], ["Farine", 40, "g"], ["Emmental râpé", 1, "sachet"]],
+    steps: ["Cuis les endives 20 min à l'étouffée, puis presse-les pour retirer l'eau.", "Prépare une béchamel (beurre, farine, lait).", "Roule chaque endive dans une tranche de jambon, place dans un plat.", "Nappe de béchamel, ajoute le fromage et gratine 25 min à 200 °C."] },
+  { id: "tartiflette", name: "Tartiflette", icon: "🧀", months: "12-2", time: "1 h", serves: 4,
+    ing: [["Reblochon", 1, "pc"], ["Pommes de terre", 1.2, "kg"], ["Lardons", 200, "g"], ["Oignons", 2, "pc"], ["Crème fraîche", 1, "pot"], ["Vin blanc", 10, "cl"]],
+    steps: ["Cuis les pommes de terre à l'eau 20 min, puis coupe-les en rondelles.", "Fais revenir oignons et lardons, déglace au vin blanc.", "Alterne pommes de terre, lardons et crème dans un plat.", "Pose le reblochon coupé en deux, croûte vers le haut, et enfourne 25 min à 200 °C."] },
+  { id: "soupe-poireaux", name: "Soupe poireaux-pommes de terre", icon: "🥣", months: "10-3", time: "35 min", serves: 4,
+    ing: [["Poireaux", 3, "pc"], ["Pommes de terre", 0.5, "kg"], ["Oignons", 1, "pc"], ["Crème fraîche", 1, "pot"], ["Bouillon", 1, "boite", "p"], ["Beurre", 20, "g", "p"]],
+    steps: ["Émince les poireaux et l'oignon, fais-les fondre au beurre 5 min.", "Ajoute les pommes de terre en dés et 1 L de bouillon.", "Laisse cuire 20 min puis mixe avec la crème."] },
+  { id: "choux-bruxelles-lardons", name: "Choux de Bruxelles rôtis aux lardons", icon: "🥓", months: "10-2", time: "35 min", serves: 4,
+    ing: [["Choux de Bruxelles", 600, "g"], ["Lardons", 150, "g"], ["Échalotes", 2, "pc"], ["Huile d'olive", 1, "bouteille", "p"], ["Poivre", 1, "pot", "p"]],
+    steps: ["Coupe les choux en deux et blanchis-les 5 min.", "Mélange avec un filet d'huile, les échalotes et les lardons.", "Rôtis 25 min à 200 °C en remuant à mi-cuisson."] },
+  { id: "salade-agrumes", name: "Salade d'agrumes à la menthe", icon: "🍊", months: "12-3", time: "15 min", serves: 4,
+    ing: [["Oranges", 4, "pc"], ["Pamplemousse", 2, "pc"], ["Clémentines", 4, "pc"], ["Menthe", 1, "botte"], ["Miel", 1, "pot", "p"]],
+    steps: ["Pèle les agrumes à vif et coupe-les en rondelles.", "Arrose d'un filet de miel et parsème de menthe ciselée.", "Laisse reposer 15 min au frais avant de servir."] },
+  // ----- printemps -----
+  { id: "asperges-oeufs", name: "Asperges vinaigrette & œufs mollets", icon: "🌱", months: "4-6", time: "25 min", serves: 4,
+    ing: [["Asperges", 2, "botte"], ["Œufs", 4, "pc"], ["Ciboulette", 1, "botte"], ["Moutarde", 1, "pot", "p"], ["Vinaigre", 1, "bouteille", "p"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Épluche les asperges et cuis-les 10 à 12 min à l'eau salée.", "Cuis les œufs 6 min, passe-les sous l'eau froide et écale-les.", "Fais une vinaigrette moutardée avec la ciboulette.", "Sers les asperges tièdes avec un œuf ouvert et la vinaigrette."] },
+  { id: "navarin-printanier", name: "Navarin d'agneau printanier", icon: "🍖", months: "3-5", time: "1 h 30", serves: 4,
+    ing: [["Agneau", 800, "g"], ["Carottes", 0.5, "kg"], ["Navets", 1, "botte"], ["Petits pois", 300, "g"], ["Pommes de terre", 0.5, "kg"], ["Oignons", 1, "pc"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Fais dorer l'agneau en morceaux dans une cocotte, ajoute l'oignon.", "Mouille à hauteur de bouillon et laisse mijoter 45 min.", "Ajoute carottes, navets et pommes de terre : 25 min.", "Termine avec les petits pois 10 min."] },
+  { id: "risotto-petits-pois", name: "Risotto petits pois & menthe", icon: "🫛", months: "5-7", time: "35 min", serves: 4,
+    ing: [["Riz", 300, "g"], ["Petits pois", 500, "g"], ["Oignons", 1, "pc"], ["Parmesan", 80, "g"], ["Menthe", 1, "botte"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Écosse les petits pois.", "Fais revenir l'oignon puis le riz, ajoute le bouillon chaud louche par louche.", "À mi-cuisson, ajoute les petits pois.", "Termine avec le parmesan et la menthe ciselée."] },
+  { id: "epinards-oeufs", name: "Œufs cocotte aux épinards", icon: "🍳", months: "3-5,9-11", time: "20 min", serves: 4,
+    ing: [["Épinards", 600, "g"], ["Œufs", 4, "pc"], ["Crème fraîche", 1, "pot"], ["Ail", 1, "pc"], ["Baguette", 1, "pc"]],
+    steps: ["Fais tomber les épinards à la poêle avec l'ail haché.", "Répartis-les dans 4 ramequins, ajoute une cuillère de crème et casse un œuf dessus.", "Cuis 10 min à 180 °C au bain-marie. Sers avec des mouillettes."] },
+  { id: "tarte-rhubarbe", name: "Tarte à la rhubarbe", icon: "🥧", months: "4-6", time: "50 min", serves: 6,
+    ing: [["Rhubarbe", 1, "botte"], ["Pâte brisée", 1, "pc"], ["Œufs", 2, "pc"], ["Crème fraîche", 1, "pot"], ["Sucre", 120, "g", "p"]],
+    steps: ["Épluche la rhubarbe, coupe-la en tronçons et saupoudre de sucre 30 min.", "Étale la pâte dans un moule et répartis la rhubarbe égouttée.", "Bats œufs, crème et le reste du sucre, verse sur la tarte.", "Cuis 35 min à 190 °C."] },
+  { id: "fraises-menthe", name: "Fraises au citron & menthe", icon: "🍓", months: "5-7", time: "10 min", serves: 4,
+    ing: [["Fraises", 2, "barquette"], ["Citrons", 1, "pc"], ["Menthe", 1, "botte"], ["Sucre", 30, "g", "p"]],
+    steps: ["Équeute et coupe les fraises.", "Ajoute le jus de citron, un peu de sucre et la menthe ciselée.", "Laisse macérer 30 min au frais."] },
+  // ----- été -----
+  { id: "ratatouille", name: "Ratatouille", icon: "🍆", months: "7-9", time: "1 h", serves: 6,
+    ing: [["Courgettes", 2, "pc"], ["Aubergine", 2, "pc"], ["Poivrons", 2, "pc"], ["Tomates", 600, "g"], ["Oignons", 2, "pc"], ["Ail", 2, "pc"], ["Basilic", 1, "pot"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Coupe tous les légumes en dés.", "Fais revenir séparément aubergines, courgettes et poivrons dans l'huile d'olive.", "Dans une cocotte, fonds oignons et ail, ajoute les tomates puis tous les légumes.", "Laisse mijoter 30 min à couvert, termine avec le basilic."] },
+  { id: "tomates-mozza", name: "Tomates-mozzarella au basilic", icon: "🍅", months: "6-9", time: "10 min", serves: 4,
+    ing: [["Tomates", 600, "g"], ["Mozzarella", 2, "pc"], ["Basilic", 1, "pot"], ["Huile d'olive", 1, "bouteille", "p"], ["Sel", 1, "paquet", "p"]],
+    steps: ["Coupe tomates et mozzarella en tranches.", "Alterne-les dans un plat, ajoute le basilic.", "Arrose d'huile d'olive, sale et poivre."] },
+  { id: "taboule", name: "Taboulé frais", icon: "🥗", months: "6-9", time: "20 min", serves: 4,
+    ing: [["Semoule", 250, "g"], ["Tomates", 400, "g"], ["Concombre", 1, "pc"], ["Oignons rouges", 1, "pc"], ["Persil", 1, "botte"], ["Menthe", 1, "botte"], ["Citrons", 2, "pc"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Fais gonfler la semoule avec le jus des citrons, un filet d'huile et un peu d'eau.", "Coupe tomates, concombre et oignon en petits dés, cisèle les herbes.", "Mélange le tout, sale et laisse reposer 1 h au frais."] },
+  { id: "gaspacho", name: "Gaspacho", icon: "🥤", months: "7-9", time: "15 min", serves: 4,
+    ing: [["Tomates", 1000, "g"], ["Concombre", 1, "pc"], ["Poivrons", 1, "pc"], ["Oignons rouges", 1, "pc"], ["Ail", 1, "pc"], ["Vinaigre", 1, "bouteille", "p"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Coupe grossièrement tous les légumes.", "Mixe-les finement avec 3 c. à soupe d'huile et 1 de vinaigre.", "Sale, poivre et laisse au moins 2 h au frais."] },
+  { id: "clafoutis-cerises", name: "Clafoutis aux cerises", icon: "🍒", months: "5-7", time: "50 min", serves: 6,
+    ing: [["Cerises", 600, "g"], ["Œufs", 3, "pc"], ["Lait", 0.4, "l"], ["Farine", 100, "g"], ["Sucre", 100, "g", "p"], ["Beurre", 20, "g", "p"]],
+    steps: ["Préchauffe le four à 180 °C et beurre un plat.", "Lave les cerises et répartis-les dans le plat.", "Fouette œufs et sucre, ajoute la farine puis le lait.", "Verse sur les cerises et cuis 35 min."] },
+  { id: "melon-jambon", name: "Melon & jambon cru", icon: "🍈", months: "6-9", time: "10 min", serves: 4,
+    ing: [["Melon", 1, "pc"], ["Jambon cru", 8, "tranche"], ["Basilic", 1, "pot", "p"]],
+    steps: ["Coupe le melon en tranches et retire la peau.", "Dispose les tranches avec le jambon cru.", "Ajoute quelques feuilles de basilic et un tour de poivre."] },
+  { id: "peches-rotis", name: "Pêches rôties au miel", icon: "🍑", months: "6-9", time: "25 min", serves: 4,
+    ing: [["Pêches", 4, "pc"], ["Miel", 1, "pot"], ["Yaourts", 1, "pack"], ["Amandes", 1, "sachet", "p"]],
+    steps: ["Coupe les pêches en deux et retire le noyau.", "Arrose de miel et rôtis 15 min à 200 °C.", "Sers tiède avec un yaourt et des amandes effilées."] }
+];
+RECIPES.forEach(r => { r.monthList = parseMonths(r.months); });
+const recipeInSeason = (r, months) => r.monthList.some(m => months.includes(m));
+
+function scaleQty(q, unit, factor) {
+  const v = q * factor;
+  if (unit === "g" || unit === "ml") return Math.max(10, Math.round(v / 10) * 10);
+  if (unit === "kg" || unit === "l") return Math.max(0.1, Math.round(v * 10) / 10);
+  if (unit === "cl") return Math.max(1, Math.round(v));
+  if (unit === "pc" || unit === "tranche") return Math.max(1, Math.round(v));
+  return Math.max(1, Math.ceil(v - 0.25));
+}
+function recipeCard(r) {
+  const nSeason = r.ing.filter(i => inSeasonNow(keyOf(i[0]))).length;
+  const ok = recipeInSeason(r, [nowMonth()]);
+  return `<button class="rcard" data-recipe="${r.id}">
+    <span class="rem">${r.icon}</span>
+    <span class="rinfo"><b>${esc(r.name)}</b>
+      <span>⏱ ${esc(r.time)} · ${r.ing.filter(i => !i[3]).length} ingrédients${ok && nSeason ? ` · <span class="rs">🌱 ${nSeason} de saison</span>` : ""}</span></span>
+  </button>`;
+}
+function recipesBlock(compact) {
+  const m = nowMonth();
+  const now = RECIPES.filter(r => recipeInSeason(r, [m]));
+  if (compact) {
+    return now.length ? `<div class="sectitle">🍲 Idées recettes de saison · ${now.length}</div><div class="rrow">${now.map(recipeCard).join("")}</div>` : "";
+  }
+  let html = `<div class="seasonhead"><b>🍲 Recettes de saison</b><br><span style="color:var(--muted)">Choisis une recette : ses ingrédients s'ajoutent à ta liste en un geste.</span></div>`;
+  html += `<div class="sectitle">En ${MONTHS[m - 1]} · ${now.length}</div><div class="rlist">${now.map(recipeCard).join("")}</div>`;
+  const cur = curSeason();
+  const order = SEASONS.slice(SEASONS.indexOf(cur) + 1).concat(SEASONS.slice(0, SEASONS.indexOf(cur) + 1));
+  order.forEach(x => {
+    const rs = RECIPES.filter(r => !now.includes(r) && recipeInSeason(r, x.months) && !html.includes(`data-recipe="${r.id}"`));
+    if (rs.length) html += `<div class="sectitle" style="margin-top:14px">${x.icon} ${x.label} · ${rs.length}</div><div class="rlist">${rs.map(recipeCard).join("")}</div>`;
+  });
+  return html;
+}
+function searchRecipes(nq) {
+  if (nq.length < 3) return [];
+  if (/^recet/.test(nq)) return RECIPES.filter(r => recipeInSeason(r, [nowMonth()]));
+  return RECIPES.filter(r => norm(r.name).includes(nq) || r.ing.some(i => norm(i[0]).startsWith(nq) && !i[3]))
+    .sort((a, b) => recipeInSeason(b, [nowMonth()]) - recipeInSeason(a, [nowMonth()]));
+}
+
+function recipeSheet(id) {
+  const r = RECIPES.find(x => x.id === id); if (!r) return;
+  let serves = r.serves;
+  const sel = {};
+  r.ing.forEach(([name, , , pantry]) => { const pid = keyOf(name); sel[pid] = !pantry && !openItemFor(pid); });
+  const rows = () => r.ing.map(([name, q, unit, pantry]) => {
+    const pid = keyOf(name);
+    const p = productOf(pid) || { icon: "🛒", name };
+    const have = openItemFor(pid);
+    const qty = pantry ? "" : fmtQty(scaleQty(q, unit, serves / r.serves), unit);
+    return `<label class="ing${sel[pid] ? " on" : ""}"><input type="checkbox" data-ing="${pid}" ${sel[pid] ? "checked" : ""}>
+      <span class="box"></span><span class="iic">${esc(p.icon)}</span>
+      <span class="inm">${esc(p.name)}${inSeasonNow(pid) ? " 🌱" : ""}<small>${pantry ? "placard" : ""}${have ? (pantry ? " · " : "") + "déjà dans la liste" : ""}</small></span>
+      <span class="iq">${esc(qty)}</span></label>`;
+  }).join("");
+  const count = () => Object.values(sel).filter(Boolean).length;
+  const body = () => `<div class="grab"></div>
+    <div class="shead"><span class="bigico">${r.icon}</span><div class="tt"><h3>${esc(r.name)}</h3>
+      <div class="sub">⏱ ${esc(r.time)} · ${recipeInSeason(r, [nowMonth()]) ? "🌱 de saison" : "saison : " + esc(monthRange(r.monthList))}</div></div></div>
+    <div class="row" style="justify-content:space-between"><span class="lbl" style="margin:0">Ingrédients</span>
+      <span class="qty" style="gap:6px"><button data-act="less" style="width:38px;height:38px;font-size:20px">−</button><b style="min-width:84px;text-align:center">${serves} pers.</b><button data-act="more" style="width:38px;height:38px;font-size:20px">+</button></span></div>
+    <div class="ings">${rows()}</div>
+    <span class="lbl">Préparation</span>
+    <ol class="steps">${r.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
+    <div class="sacts" style="position:sticky;bottom:0;background:var(--card);padding-top:10px;margin-top:10px">
+      <button class="btn" data-act="close">Fermer</button>
+      <button class="btn primary" data-act="add" ${count() ? "" : "disabled"}>Ajouter ${count()} ingrédient${count() > 1 ? "s" : ""}</button></div>`;
+  openSheet(body(), sh => {
+    const rerender = () => { const y = sh.scrollTop; sh.innerHTML = body(); sh.scrollTop = y; };
+    sh.onchange = e => { const pid = e.target.dataset.ing; if (pid) { sel[pid] = e.target.checked; rerender(); } };
+    sh.onclick = e => {
+      const a = e.target.closest("[data-act]"); if (!a) return;
+      const act = a.dataset.act;
+      if (act === "close") closeSheet();
+      else if (act === "less") { serves = Math.max(1, serves - 1); rerender(); }
+      else if (act === "more") { serves = Math.min(20, serves + 1); rerender(); }
+      else if (act === "add") addRecipe(r, serves, sel);
+    };
+  });
+}
+function addRecipe(r, serves, sel) {
+  const adds = [], updates = [];
+  let merged = 0;
+  r.ing.forEach(([name, q, unit, pantry]) => {
+    const pid = keyOf(name);
+    if (!sel[pid]) return;
+    const p = productOf(pid) || { name, icon: "🛒", cat: "au" };
+    const qty = pantry ? 0 : scaleQty(q, unit, serves / r.serves);
+    const u = unitOf(pantry ? (p.unit || unit) : unit);
+    const have = openItemFor(pid);
+    if (have) {
+      if (qty && have.unit === u.id) updates.push({ id: have.id, patch: { qty: Math.round(((have.qty || 0) + qty) * 100) / 100 } });
+      merged++;
+      return;
+    }
+    adds.push({ pid, name: p.name, icon: p.icon, cat: CAT[p.cat] ? p.cat : "au", qty, unit: u.id, unitLabel: u.label,
+      note: r.icon + " " + r.name, checked: false, addedBy: S.store.me.name, addedByUid: S.store.uid });
+  });
+  if (adds.length || updates.length) S.store.addMany(S.cur, adds, updates);
+  closeSheet();
+  toast(`${r.icon} ${adds.length} ingrédient${adds.length > 1 ? "s" : ""} ajouté${adds.length > 1 ? "s" : ""}` + (merged ? ` · ${merged} déjà dans la liste` : ""));
+}
+
 /* ============================================================
    État
    ============================================================ */
@@ -695,6 +910,12 @@ function localStore() {
     addItem(lid, item) { if (!L(lid)) return; L(lid).items[rid(10)] = Object.assign({}, item, { createdAt: Date.now() }); save(); },
     updateItems(lid, ids, patch) { ids.forEach(id => { const it = L(lid) && L(lid).items[id]; if (it) Object.assign(it, patch); }); save(); },
     deleteItems(lid, ids) { ids.forEach(id => { if (L(lid)) delete L(lid).items[id]; }); save(); },
+    addMany(lid, adds, updates) {
+      if (!L(lid)) return;
+      adds.forEach(it => { L(lid).items[rid(10)] = Object.assign({}, it, { createdAt: Date.now() }); });
+      updates.forEach(u => { const it = L(lid).items[u.id]; if (it) Object.assign(it, u.patch); });
+      save();
+    },
     setCount() {}, ensureMe() {},
     saveProduct(pid, p) { data.cat.products[pid] = p; save(); },
     deleteProduct(pid) { delete data.cat.products[pid]; save(); },
@@ -761,6 +982,13 @@ function remoteStore(user) {
       const b = F.writeBatch(db);
       ids.forEach(id => b.update(F.doc(itemsCol(lid), id), patch));
       b.update(listRef(lid), delta ? { openCount: F.increment(delta), updatedAt: now() } : { updatedAt: now() });
+      run(b.commit());
+    },
+    addMany(lid, adds, updates) {
+      const b = F.writeBatch(db);
+      adds.forEach(it => b.set(F.doc(itemsCol(lid)), Object.assign({}, it, { createdAt: now() })));
+      updates.forEach(u => b.update(F.doc(itemsCol(lid), u.id), u.patch));
+      b.update(listRef(lid), { openCount: F.increment(adds.length), updatedAt: now() });
       run(b.commit());
     },
     deleteItems(lid, ids, delta) {
@@ -1197,6 +1425,8 @@ function renderSearch() {
     let html = "";
     const sKey = /^(de )?saison/.test(nq) ? "saison" : (SEASONS.find(x => norm(x.label).startsWith(nq) && nq.length >= 3) || {}).id;
     if (sKey) html += seasonBlock(sKey);
+    const rs = searchRecipes(nq);
+    if (rs.length && !sKey) html += `<div class="sectitle">🍲 Recettes · ${rs.length}</div><div class="rrow" style="margin-bottom:12px">${rs.map(recipeCard).join("")}</div><div class="sectitle">Produits</div>`;
     html += `<div class="grid">`;
     if (!exact) html += `<button class="tile ptile create" data-create="1"><span class="ic">＋</span><span class="nm">Créer « ${esc(q)} »</span></button>`;
     html += list.map(ptileHTML).join("") + `</div>`;
@@ -1211,8 +1441,10 @@ function renderSearch() {
   let chips = `<div class="chips">` + (hasFreq ? `<button class="chip${S.chip === "freq" ? " on" : ""}" data-chip="freq">⭐ Habituels</button>` : "") +
     (custom ? `<button class="chip${S.chip === "mine" ? " on" : ""}" data-chip="mine">✏️ Mes produits</button>` : "") +
     `<button class="chip${S.chip === "saison" ? " on" : ""}" data-chip="saison">🌱 De saison</button>` +
+    `<button class="chip${S.chip === "recettes" ? " on" : ""}" data-chip="recettes">🍲 Recettes</button>` +
     SEASONS.map(x => `<button class="chip${S.chip === x.id ? " on" : ""}" data-chip="${x.id}">${x.icon} ${x.label}${x.id === curSeason().id ? " •" : ""}</button>`).join("") +
     CATS.map(([id, label, icon]) => `<button class="chip${S.chip === id ? " on" : ""}" data-chip="${id}">${icon} ${esc(label)}</button>`).join("") + `</div>`;
+  if (S.chip === "recettes") { box.innerHTML = chips + recipesBlock(false); return; }
   if (S.chip === "saison" || SEASONS.some(x => x.id === S.chip)) {
     box.innerHTML = chips + seasonBlock(S.chip) + `<p class="hint">🌱 = de saison ce mois-ci en France · tape un nom pour chercher.</p>`;
     return;
@@ -1238,13 +1470,18 @@ function seasonBlock(key) {
     ["🐟 Mer", prods.filter(p => p.cat !== "fl")]
   ];
   const sortFn = (a, b) => (inSeasonNow(b.pid) - inSeasonNow(a.pid)) || a.name.localeCompare(b.name, "fr");
-  return `<div class="seasonhead"><b>${esc(title)}</b><br><span style="color:var(--muted)">${esc(sub)}</span></div>` +
+  let recs = "";
+  if (key === "saison") recs = recipesBlock(true);
+  else { const rs = RECIPES.filter(r => recipeInSeason(r, months)); if (rs.length) recs = `<div class="sectitle">🍲 Recettes · ${rs.length}</div><div class="rrow">${rs.map(recipeCard).join("")}</div>`; }
+  return `<div class="seasonhead"><b>${esc(title)}</b><br><span style="color:var(--muted)">${esc(sub)}</span></div>` + recs +
     groups.filter(g => g[1].length).map(([t, list]) => `<div class="sectitle">${t} · ${list.length}</div><div class="grid" style="margin-bottom:14px">${list.sort(sortFn).map(ptileHTML).join("")}</div>`).join("");
 }
 $("#searchView").addEventListener("click", e => {
   const c = e.target.closest("[data-chip]");
   if (c) { S.chip = c.dataset.chip; renderSearch(); return; }
   if (e.target.closest("[data-create]")) { createSheet(S.q.trim()); return; }
+  const rc = e.target.closest("[data-recipe]");
+  if (rc) { recipeSheet(rc.dataset.recipe); return; }
   const t = e.target.closest("[data-pid]");
   if (t) pickProduct(t.dataset.pid);
 });
@@ -1574,7 +1811,7 @@ function catalogSheet() {
    ============================================================ */
 const sheet = $("#sheet"), scrim = $("#scrim");
 function openSheet(html, mount) {
-  sheet.onclick = null; sheet.oninput = null; sheet.onkeydown = null;
+  sheet.onclick = null; sheet.oninput = null; sheet.onkeydown = null; sheet.onchange = null;
   sheet.innerHTML = html;
   sheet.scrollTop = 0;
   if (!sheetOpen) { sheetOpen = true; pushLayer("sheet"); }
