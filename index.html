@@ -159,6 +159,24 @@ h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0;letter-spac
 .ing .iq{font-weight:700;color:var(--accent);font-size:14px;white-space:nowrap}
 .ing:not(.on){opacity:.6}
 .steps{margin:0;padding-left:22px;display:grid;gap:8px;color:var(--ink)}
+.steps.big{list-style:none;padding:0;gap:8px}
+.steps.big li{display:flex;gap:12px;align-items:flex-start;background:var(--bg);border-radius:14px;padding:12px;cursor:pointer;line-height:1.45}
+.steps.big .n{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:14px;display:grid;place-items:center;flex:none}
+.steps.big li.done{opacity:.55}
+.steps.big li.done span:last-child{text-decoration:line-through}
+.steps.big li.done .n{background:var(--chip);color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.facts div{background:var(--bg);border-radius:14px;padding:10px;text-align:center}
+.facts b{display:block;font-size:14px}
+.facts span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.ing.mi{cursor:default}
+.st{font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.st.ok{background:var(--accent-soft);color:var(--accent)}
+.st.buy{background:var(--warn-soft);color:var(--warn)}
+.st.pan{background:var(--chip);color:var(--muted)}
+.st.add{border:1.5px dashed var(--accent);color:var(--accent)}
+.rinfo .bar{display:block;height:5px;border-radius:3px;background:var(--chip);margin-top:7px;overflow:hidden}
+.rinfo .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
 .steps li{padding-left:4px}
 .seasonhead{background:var(--accent-soft);border-radius:14px;padding:10px 14px;margin:0 0 10px;font-size:14px}
 .seasonhead b{font-family:Fraunces,Georgia,serif;font-size:17px}
@@ -827,6 +845,7 @@ function recipeSheet(id) {
   const body = () => `<div class="grab"></div>
     <div class="shead"><span class="bigico">${r.icon}</span><div class="tt"><h3>${esc(r.name)}</h3>
       <div class="sub">⏱ ${esc(r.time)} · ${recipeInSeason(r, [nowMonth()]) ? "🌱 de saison" : "saison : " + esc(monthRange(r.monthList))}</div></div></div>
+    ${menuOf()[r.id] ? `<button class="banner" data-act="detail" style="width:100%;text-align:left;margin:0 0 14px;display:flex;align-items:center;gap:10px"><span style="font-size:22px">📌</span><span style="flex:1"><b>Déjà au menu de cette liste</b><br><span style="color:var(--muted);font-size:13px">Ouvrir la fiche détaillée</span></span><span>›</span></button>` : ""}
     <div class="row" style="justify-content:space-between"><span class="lbl" style="margin:0">Ingrédients</span>
       <span class="qty" style="gap:6px"><button data-act="less" style="width:38px;height:38px;font-size:20px">−</button><b style="min-width:84px;text-align:center">${serves} pers.</b><button data-act="more" style="width:38px;height:38px;font-size:20px">+</button></span></div>
     <div class="ings">${rows()}</div>
@@ -845,6 +864,7 @@ function recipeSheet(id) {
       else if (act === "less") { serves = Math.max(1, serves - 1); rerender(); }
       else if (act === "more") { serves = Math.min(20, serves + 1); rerender(); }
       else if (act === "add") addRecipe(r, serves, sel);
+      else if (act === "detail") menuSheet(r.id);
     };
   });
 }
@@ -864,11 +884,158 @@ function addRecipe(r, serves, sel) {
       return;
     }
     adds.push({ pid, name: p.name, icon: p.icon, cat: CAT[p.cat] ? p.cat : "au", qty, unit: u.id, unitLabel: u.label,
-      note: r.icon + " " + r.name, checked: false, addedBy: S.store.me.name, addedByUid: S.store.uid });
+      note: r.icon + " " + r.name, recipe: r.id, checked: false, addedBy: S.store.me.name, addedByUid: S.store.uid });
   });
   if (adds.length || updates.length) S.store.addMany(S.cur, adds, updates);
+  S.store.setMenu(S.cur, r.id, { serves, at: Date.now(), by: S.store.me.name });
   closeSheet();
-  toast(`${r.icon} ${adds.length} ingrédient${adds.length > 1 ? "s" : ""} ajouté${adds.length > 1 ? "s" : ""}` + (merged ? ` · ${merged} déjà dans la liste` : ""));
+  toast("Ajoutée au menu · " + `${r.icon} ${adds.length} ingrédient${adds.length > 1 ? "s" : ""} ajouté${adds.length > 1 ? "s" : ""}` + (merged ? ` · ${merged} déjà dans la liste` : ""));
+}
+
+/* ---------- détails des recettes (fiche « Au menu ») ---------- */
+const RDETAILS = {
+  "veloute-potimarron": { level: "Facile", prep: "15 min", cook: "30 min", tools: ["Cocotte", "Mixeur plongeant", "Planche et couteau"], tip: "Fais griller quelques châtaignes émiettées à la poêle pour le dessus : ça apporte du croquant.", keep: "3 jours au frigo, 3 mois au congélateur." },
+  "risotto-champignons": { level: "Moyen", prep: "10 min", cook: "25 min", tools: ["Sauteuse large", "Casserole pour le bouillon", "Cuillère en bois"], tip: "Ne rince jamais le riz : son amidon fait le crémeux. Garde le bouillon frémissant à côté.", keep: "À manger aussitôt ; les restes font de bonnes galettes poêlées le lendemain." },
+  "salade-figues-chevre": { level: "Facile", prep: "15 min", cook: "aucune", tools: ["Saladier", "Petit bol pour la vinaigrette"], tip: "Passe le chèvre 3 min sous le gril sur des tranches de baguette pour une version tiède.", keep: "Assaisonne au dernier moment ; les figues coupées se gardent 1 jour au frigo." },
+  "crumble-pommes-poires": { level: "Facile", prep: "15 min", cook: "30 min", tools: ["Plat à gratin", "Saladier", "Économe"], tip: "Ajoute 50 g de flocons d'avoine ou de poudre d'amande à la pâte pour plus de croustillant.", keep: "2 jours à température ambiante ; réchauffe 10 min au four." },
+  "gratin-chou-fleur": { level: "Facile", prep: "15 min", cook: "30 min", tools: ["Grande casserole", "Fouet", "Plat à gratin"], tip: "Une pincée de muscade dans la béchamel change tout.", keep: "3 jours au frigo." },
+  "potee-butternut-lentilles": { level: "Facile", prep: "15 min", cook: "25 min", tools: ["Cocotte", "Râpe", "Casserole pour le riz"], tip: "Avec des lentilles corail, la cuisson tombe à 15 min et la texture devient fondante.", keep: "4 jours au frigo ; se congèle très bien." },
+  "pot-au-feu": { level: "Facile", prep: "30 min", cook: "2 h 45", tools: ["Grande marmite (8 L)", "Écumoire", "Casserole"], tip: "Ajoute un os à moelle les 30 dernières minutes, à tartiner sur du pain grillé avec du gros sel.", keep: "4 jours au frigo ; le bouillon se congèle pour une soupe." },
+  "endives-jambon": { level: "Facile", prep: "20 min", cook: "45 min", tools: ["Cocotte", "Casserole", "Fouet", "Plat à gratin"], tip: "Une cuillère de sucre à la cuisson des endives atténue leur amertume.", keep: "2 jours au frigo." },
+  "tartiflette": { level: "Moyen", prep: "20 min", cook: "45 min", tools: ["Casserole", "Poêle", "Plat à gratin"], tip: "Prends des pommes de terre à chair ferme (charlotte, amandine) : elles se tiennent à la cuisson.", keep: "2 jours au frigo ; réchauffe au four." },
+  "soupe-poireaux": { level: "Facile", prep: "10 min", cook: "25 min", tools: ["Cocotte", "Mixeur plongeant"], tip: "Garde un peu de vert de poireau émincé et poêlé pour décorer les bols.", keep: "3 jours au frigo, 3 mois au congélateur." },
+  "choux-bruxelles-lardons": { level: "Facile", prep: "10 min", cook: "30 min", tools: ["Casserole", "Plaque de four"], tip: "Pose les demi-choux face coupée contre la plaque : ils caramélisent au lieu de bouillir.", keep: "2 jours au frigo." },
+  "salade-agrumes": { level: "Facile", prep: "15 min", cook: "aucune", tools: ["Couteau bien aiguisé", "Saladier"], tip: "Récupère le jus qui coule à la découpe pour arroser la salade.", keep: "1 jour au frigo, filmée." },
+  "asperges-oeufs": { level: "Facile", prep: "15 min", cook: "12 min", tools: ["Grande casserole", "Économe", "Petit bol"], tip: "Casse le bas des asperges à la main : elles se brisent pile là où elles deviennent fibreuses.", keep: "Asperges cuites : 2 jours au frigo." },
+  "navarin-printanier": { level: "Moyen", prep: "25 min", cook: "1 h 15", tools: ["Cocotte en fonte", "Économe"], tip: "Épaule ou collier d'agneau : moins chers et parfaits en mijoté.", keep: "3 jours au frigo ; encore meilleur réchauffé." },
+  "risotto-petits-pois": { level: "Moyen", prep: "15 min", cook: "25 min", tools: ["Sauteuse", "Casserole pour le bouillon"], tip: "Hors saison, les petits pois surgelés fonctionnent très bien.", keep: "À déguster aussitôt." },
+  "epinards-oeufs": { level: "Facile", prep: "10 min", cook: "15 min", tools: ["Poêle", "4 ramequins", "Plat pour le bain-marie"], tip: "Le blanc doit être pris et le jaune encore coulant : surveille dès 8 min.", keep: "Se mange tout de suite." },
+  "tarte-rhubarbe": { level: "Facile", prep: "20 min (+ 30 min de repos)", cook: "35 min", tools: ["Moule à tarte", "Fouet", "Passoire"], tip: "Jette le jus rendu par la rhubarbe sucrée : la pâte restera croustillante.", keep: "2 jours au frigo." },
+  "fraises-menthe": { level: "Facile", prep: "10 min (+ 30 min au frais)", cook: "aucune", tools: ["Saladier"], tip: "Un tour de poivre ou un trait de vinaigre balsamique réveille les fraises.", keep: "À servir dans la journée." },
+  "ratatouille": { level: "Facile", prep: "25 min", cook: "45 min", tools: ["Grande poêle", "Cocotte"], tip: "Cuire les légumes séparément préserve leur goût et leur tenue. Encore meilleure le lendemain.", keep: "4 jours au frigo ; se congèle." },
+  "tomates-mozza": { level: "Facile", prep: "10 min", cook: "aucune", tools: ["Couteau à dents"], tip: "Sors tomates et mozzarella du frigo 30 min avant : elles ont bien plus de goût.", keep: "À servir aussitôt." },
+  "taboule": { level: "Facile", prep: "20 min (+ 1 h au frais)", cook: "aucune", tools: ["Saladier", "Planche et couteau"], tip: "Plus d'herbes que de semoule : c'est le secret du taboulé libanais.", keep: "2 jours au frigo." },
+  "gaspacho": { level: "Facile", prep: "15 min (+ 2 h au frais)", cook: "aucune", tools: ["Blender ou mixeur"], tip: "Sers-le très frais avec des dés de concombre et quelques croûtons.", keep: "2 jours au frigo." },
+  "clafoutis-cerises": { level: "Facile", prep: "15 min", cook: "35 min", tools: ["Plat à gratin", "Fouet", "Saladier"], tip: "En gardant les noyaux, les cerises donnent un léger goût d'amande (préviens les convives !).", keep: "2 jours au frigo ; tiède ou froid." },
+  "melon-jambon": { level: "Facile", prep: "10 min", cook: "aucune", tools: ["Couteau"], tip: "Choisis un melon lourd, parfumé, dont le pédoncule se détache facilement.", keep: "Melon entamé : 2 jours filmé au frigo." },
+  "peches-rotis": { level: "Facile", prep: "10 min", cook: "15 min", tools: ["Plat allant au four"], tip: "Ajoute une gousse de vanille fendue ou une branche de romarin dans le plat.", keep: "Se mange tiède, aussitôt." }
+};
+const menuOf = () => (curList() && curList().menu) || {};
+function ingStatus(pid, pantry) {
+  const its = S.items.filter(i => i.pid === pid);
+  if (its.some(i => !i.checked)) return "buy";
+  if (its.length) return "got";
+  return pantry ? "pantry" : "missing";
+}
+function menuProgress(r) {
+  const need = r.ing.filter(i => !i[3]);
+  const got = need.filter(i => ingStatus(keyOf(i[0]), false) === "got").length;
+  return { got, total: need.length };
+}
+function menuBlock() {
+  const menu = menuOf();
+  const ids = Object.keys(menu).filter(id => RECIPES.some(r => r.id === id))
+    .sort((a, b) => (menu[a].at || 0) - (menu[b].at || 0));
+  if (!ids.length) return "";
+  return `<div class="sectitle" style="margin-top:4px">🍲 Au menu · ${ids.length}</div><div class="rrow">` + ids.map(id => {
+    const r = RECIPES.find(x => x.id === id), m = menu[id], pr = menuProgress(r);
+    const pct = pr.total ? Math.round(pr.got / pr.total * 100) : 0;
+    return `<button class="rcard" data-menu="${id}"><span class="rem">${r.icon}</span><span class="rinfo"><b>${esc(r.name)}</b>
+      <span>${m.serves} pers. · ⏱ ${esc(r.time)} · ${pr.got}/${pr.total} pris</span>
+      <span class="bar"><i style="width:${pct}%"></i></span></span></button>`;
+  }).join("") + `</div>`;
+}
+function stepsKey(rid) { return "cabas.steps." + S.cur + "." + rid; }
+let wakeLock = null;
+async function keepAwake(on) {
+  try {
+    if (on && "wakeLock" in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); }
+    if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) {}
+}
+function menuSheet(id) {
+  const r = RECIPES.find(x => x.id === id); if (!r) return;
+  const d = RDETAILS[id] || {};
+  const lid = S.cur;
+  let serves = (menuOf()[id] && menuOf()[id].serves) || r.serves;
+  let done = [];
+  try { done = JSON.parse(lsGet(stepsKey(id))) || []; } catch (e) {}
+  const LABEL = { got: ["✓ Pris", "ok"], buy: ["🛒 À acheter", "buy"], pantry: ["🏠 Placard", "pan"], missing: ["＋ Ajouter", "add"] };
+  const body = () => {
+    const f = serves / r.serves;
+    const missing = r.ing.filter(i => !i[3] && ingStatus(keyOf(i[0]), false) === "missing").length;
+    const pr = menuProgress(r);
+    return `<div class="grab"></div>
+    <div class="shead"><span class="bigico">${r.icon}</span><div class="tt"><h3>${esc(r.name)}</h3>
+      <div class="sub">Au menu · ${pr.got}/${pr.total} ingrédients pris</div></div></div>
+    <div class="facts">
+      <div><b>${esc(d.level || "Facile")}</b><span>Niveau</span></div>
+      <div><b>${esc(d.prep || r.time)}</b><span>Préparation</span></div>
+      <div><b>${esc(d.cook || "—")}</b><span>Cuisson</span></div>
+    </div>
+    <div class="row" style="justify-content:space-between;margin-top:16px"><span class="lbl" style="margin:0">Ingrédients</span>
+      <span class="qty" style="gap:6px"><button data-act="less" style="width:38px;height:38px;font-size:20px">−</button><b style="min-width:84px;text-align:center">${serves} pers.</b><button data-act="more" style="width:38px;height:38px;font-size:20px">+</button></span></div>
+    <div class="ings">${r.ing.map(([name, q, unit, pantry]) => {
+      const pid = keyOf(name), p = productOf(pid) || { icon: "🛒", name };
+      const st = ingStatus(pid, pantry), [lab, cls] = LABEL[st];
+      return `<div class="ing on mi"><span class="iic">${esc(p.icon)}</span>
+        <span class="inm">${esc(p.name)}<small>${pantry ? "selon ton placard" : esc(fmtQty(scaleQty(q, unit, f), unit))}</small></span>
+        ${st === "missing" ? `<button class="st ${cls}" data-addone="${pid}">${lab}</button>` : `<span class="st ${cls}">${lab}</span>`}</div>`;
+    }).join("")}</div>
+    ${missing ? `<button class="btn ghost" data-act="addmissing" style="width:100%;margin-top:8px">＋ Ajouter les ${missing} ingrédient${missing > 1 ? "s" : ""} manquant${missing > 1 ? "s" : ""}</button>` : ""}
+    ${d.tools ? `<span class="lbl">Ustensiles</span><div class="chips wrapchips">${d.tools.map(t => `<span class="chip" style="cursor:default">${esc(t)}</span>`).join("")}</div>` : ""}
+    <span class="lbl">Étapes <span style="text-transform:none;letter-spacing:0;font-weight:500">· touche une étape quand elle est faite</span></span>
+    <ol class="steps big">${r.steps.map((s, i) => `<li class="${done.includes(i) ? "done" : ""}" data-step="${i}"><span class="n">${done.includes(i) ? "✓" : i + 1}</span><span>${esc(s)}</span></li>`).join("")}</ol>
+    ${d.tip ? `<div class="note-box" style="margin-top:16px"><b>💡 Astuce</b><br>${esc(d.tip)}</div>` : ""}
+    ${d.keep ? `<div class="note-box"><b>🧊 Conservation</b><br>${esc(d.keep)}</div>` : ""}
+    <div class="sacts">
+      <button class="btn danger" data-act="remove">Retirer du menu</button>
+      <button class="btn primary" data-act="cooked">C'est cuisiné ✓</button>
+    </div>`;
+  };
+  openSheet(body(), sh => {
+    keepAwake(true);
+    const rerender = () => { const y = sh.scrollTop; sh.innerHTML = body(); sh.scrollTop = y; };
+    sh._rerender = rerender;
+    sh.onclick = e => {
+      const li = e.target.closest("[data-step]");
+      if (li) {
+        const i = +li.dataset.step;
+        done = done.includes(i) ? done.filter(x => x !== i) : done.concat(i);
+        lsSet(stepsKey(id), JSON.stringify(done)); rerender(); return;
+      }
+      const one = e.target.closest("[data-addone]");
+      if (one) { addIngredients(r, serves, [one.dataset.addone]); rerender(); return; }
+      const a = e.target.closest("[data-act]"); if (!a) return;
+      const act = a.dataset.act;
+      if (act === "less" || act === "more") {
+        serves = act === "less" ? Math.max(1, serves - 1) : Math.min(20, serves + 1);
+        S.store.setMenu(lid, id, Object.assign({}, menuOf()[id] || {}, { serves }));
+        rerender();
+      } else if (act === "addmissing") {
+        addIngredients(r, serves, r.ing.filter(i => !i[3] && ingStatus(keyOf(i[0]), false) === "missing").map(i => keyOf(i[0])));
+        rerender();
+      } else if (act === "remove" || act === "cooked") {
+        S.store.setMenu(lid, id, null);
+        lsSet(stepsKey(id), null);
+        closeSheet();
+        toast(act === "cooked" ? `${r.icon} Bon appétit !` : `${r.icon} Retirée du menu`);
+      }
+    };
+  });
+}
+function addIngredients(r, serves, pids) {
+  const adds = [];
+  r.ing.forEach(([name, q, unit, pantry]) => {
+    const pid = keyOf(name);
+    if (!pids.includes(pid) || S.items.some(i => i.pid === pid && !i.checked)) return;
+    const p = productOf(pid) || { name, icon: "🛒", cat: "au" };
+    const u = unitOf(pantry ? (p.unit || unit) : unit);
+    adds.push({ pid, name: p.name, icon: p.icon, cat: CAT[p.cat] ? p.cat : "au", qty: pantry ? 0 : scaleQty(q, unit, serves / r.serves),
+      unit: u.id, unitLabel: u.label, note: r.icon + " " + r.name, recipe: r.id, checked: false, addedBy: S.store.me.name, addedByUid: S.store.uid });
+    S.items.push(Object.assign({ id: "tmp" + Math.random(), createdAt: Date.now() }, adds[adds.length - 1]));
+  });
+  if (adds.length) { S.store.addMany(S.cur, adds, []); toast(`${adds.length} ingrédient${adds.length > 1 ? "s" : ""} ajouté${adds.length > 1 ? "s" : ""}`); }
 }
 
 /* ============================================================
@@ -919,6 +1086,12 @@ function localStore() {
     addItem(lid, item) { if (!L(lid)) return; L(lid).items[rid(10)] = Object.assign({}, item, { createdAt: Date.now() }); save(); },
     updateItems(lid, ids, patch) { ids.forEach(id => { const it = L(lid) && L(lid).items[id]; if (it) Object.assign(it, patch); }); save(); },
     deleteItems(lid, ids) { ids.forEach(id => { if (L(lid)) delete L(lid).items[id]; }); save(); },
+    setMenu(lid, id, val) {
+      if (!L(lid)) return;
+      L(lid).menu = L(lid).menu || {};
+      if (val) L(lid).menu[id] = val; else delete L(lid).menu[id];
+      save();
+    },
     addMany(lid, adds, updates) {
       if (!L(lid)) return;
       adds.forEach(it => { L(lid).items[rid(10)] = Object.assign({}, it, { createdAt: Date.now() }); });
@@ -992,6 +1165,9 @@ function remoteStore(user) {
       ids.forEach(id => b.update(F.doc(itemsCol(lid), id), patch));
       b.update(listRef(lid), delta ? { openCount: F.increment(delta), updatedAt: now() } : { updatedAt: now() });
       run(b.commit());
+    },
+    setMenu(lid, id, val) {
+      run(F.updateDoc(listRef(lid), { ["menu." + id]: val ? val : F.deleteField(), updatedAt: now() }));
     },
     addMany(lid, adds, updates) {
       const b = F.writeBatch(db);
@@ -1125,7 +1301,7 @@ function attachStore(store) {
     if (S.cur) {
       const l = S.lists.find(x => x.id === S.cur);
       if (!l) { toast("Tu n'as plus accès à cette liste."); closeList(); }
-      else renderListHeader();
+      else { renderListHeader(); if (!S.searching) renderItems(); if (sheetOpen && sheet._rerender) sheet._rerender(); }
     }
     if (first) { first = false; afterFirstLists(); }
   }, e => { console.error(e); if (e.code === "permission-denied") toast("Accès refusé : publie les règles Firestore (voir LISEZMOI)."); });
@@ -1275,6 +1451,7 @@ function openList(id, fromPop) {
     if (l2 && meta && !meta.pending && !meta.fromCache && l2.openCount !== open) S.store.setCount(id, open);
     renderItems();
     if (S.searching) renderSearch();
+    if (sheetOpen && sheet._rerender) sheet._rerender();
   }, e => { console.error(e); });
 }
 function closeList(fromPop) {
@@ -1321,11 +1498,12 @@ function renderItems() {
   const box = $("#listView");
   const open = S.items.filter(i => !i.checked);
   const done = S.items.filter(i => i.checked).sort((a, b) => (b.checkedAt || 0) - (a.checkedAt || 0));
+  const menuHtml = menuBlock();
   if (!S.items.length) {
-    box.innerHTML = `<div class="empty"><div class="big">🧺</div><h3>Liste vide</h3>Tape le nom d'un produit dans la barre ci-dessus pour l'ajouter.</div>`;
+    box.innerHTML = menuHtml + `<div class="empty"><div class="big">🧺</div><h3>Liste vide</h3>Tape le nom d'un produit dans la barre ci-dessus pour l'ajouter.</div>`;
     return;
   }
-  let html = `<div class="toolbar"><span>${open.length} à acheter</span><span class="sp"></span>
+  let html = menuHtml + `<div class="toolbar"><span>${open.length} à acheter</span><span class="sp"></span>
     <span class="seg"><button data-sort="cat" class="${S.sort === "cat" ? "on" : ""}">Rayons</button><button data-sort="add" class="${S.sort === "add" ? "on" : ""}">Ajout</button></span></div>`;
   if (open.length) {
     if (S.sort === "cat") {
@@ -1366,6 +1544,8 @@ function renderItems() {
     const s = e.target.closest("[data-sort]");
     if (s) { S.sort = s.dataset.sort; lsSet("cabas.sort", S.sort); renderItems(); return; }
     if (e.target.closest("[data-act=clear]")) { clearChecked(); return; }
+    const mc = e.target.closest("[data-menu]");
+    if (mc) { menuSheet(mc.dataset.menu); return; }
     const t = e.target.closest(".tile[data-id]"); if (!t) return;
     if (longFired) { longFired = false; return; }
     toggleItem(t.dataset.id);
@@ -1851,7 +2031,8 @@ function catalogSheet() {
    ============================================================ */
 const sheet = $("#sheet"), scrim = $("#scrim");
 function openSheet(html, mount) {
-  sheet.onclick = null; sheet.oninput = null; sheet.onkeydown = null; sheet.onchange = null;
+  sheet.onclick = null; sheet.oninput = null; sheet.onkeydown = null; sheet.onchange = null; sheet._rerender = null;
+  keepAwake(false);
   sheet.innerHTML = html;
   sheet.scrollTop = 0;
   if (!sheetOpen) { sheetOpen = true; pushLayer("sheet"); }
@@ -1861,6 +2042,8 @@ function openSheet(html, mount) {
 function replaceSheet(fn) { fn(); }
 function closeSheet(fromPop, then) {
   if (!sheetOpen) { if (then) then(); return; }
+  sheet._rerender = null;
+  keepAwake(false);
   sheetOpen = false;
   scrim.classList.remove("on"); sheet.classList.remove("on");
   if (document.activeElement && sheet.contains(document.activeElement)) document.activeElement.blur();
