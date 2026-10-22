@@ -135,6 +135,9 @@ h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0;letter-spac
 .wrapchips{flex-wrap:wrap;overflow:visible}
 .ptile.inlist{outline:2px solid var(--accent);outline-offset:-2px}
 .ptile .q{position:absolute;top:6px;right:6px}
+.ssn{position:absolute;top:5px;left:7px;font-size:13px}
+.seasonhead{background:var(--accent-soft);border-radius:14px;padding:10px 14px;margin:0 0 10px;font-size:14px}
+.seasonhead b{font-family:Fraunces,Georgia,serif;font-size:17px}
 .ptile.create{background:var(--accent-soft);box-shadow:none;border:1.5px dashed var(--accent)}
 .ptile.create .ic{font-size:30px;color:var(--accent);font-weight:700;font-family:"DM Sans"}
 .ptile.create .nm{color:var(--accent)}
@@ -339,244 +342,307 @@ function fmtQty(qty, unitId, unitLabel) {
 
 /* ---------- catalogue : nom | icône | rayon | unité | mots-clés ---------- */
 const RAW = `
-Pommes|🍎|fl|pc|fruit
-Poires|🍐|fl|pc|fruit
-Bananes|🍌|fl|pc|fruit
-Oranges|🍊|fl|pc|fruit agrume
-Clémentines|🍊|fl|kg|fruit agrume mandarine
-Citrons|🍋|fl|pc|agrume
-Citrons verts|🍋|fl|pc|agrume lime
-Pamplemousse|🍊|fl|pc|agrume
-Raisin|🍇|fl|g|fruit
-Fraises|🍓|fl|barquette|fruit
-Framboises|🍓|fl|barquette|fruit
-Myrtilles|🫐|fl|barquette|fruit
-Cerises|🍒|fl|g|fruit
-Pêches|🍑|fl|pc|fruit
-Abricots|🍑|fl|g|fruit
-Kiwis|🥝|fl|pc|fruit
-Ananas|🍍|fl|pc|fruit
-Mangue|🥭|fl|pc|fruit
-Melon|🍈|fl|pc|fruit
-Pastèque|🍉|fl|pc|fruit
-Noix de coco|🥥|fl|pc|fruit
-Avocats|🥑|fl|pc|
-Tomates|🍅|fl|g|legume
-Tomates cerises|🍅|fl|barquette|legume
-Concombre|🥒|fl|pc|legume
-Courgettes|🥒|fl|pc|legume
-Aubergine|🍆|fl|pc|legume
-Poivrons|🫑|fl|pc|legume
-Piments|🌶️|fl|pc|
-Carottes|🥕|fl|kg|legume
-Pommes de terre|🥔|fl|kg|legume patate
-Patates douces|🍠|fl|pc|legume
-Oignons|🧅|fl|pc|legume
-Oignons rouges|🧅|fl|pc|legume
-Échalotes|🧅|fl|pc|legume
-Ail|🧄|fl|pc|
-Gingembre|🫚|fl|g|
-Salade|🥬|fl|pc|legume laitue
-Roquette|🥬|fl|sachet|salade
-Mâche|🥬|fl|sachet|salade
-Épinards|🥬|fl|g|legume
-Chou|🥬|fl|pc|legume
-Poireaux|🥬|fl|pc|legume
-Céleri|🥬|fl|pc|legume
-Brocoli|🥦|fl|pc|legume
-Chou-fleur|🥦|fl|pc|legume
-Champignons|🍄|fl|barquette|legume
-Maïs|🌽|fl|pc|
-Haricots verts|🫛|fl|g|legume
-Petits pois|🫛|fl|g|legume
-Potiron|🎃|fl|pc|legume courge citrouille butternut
-Radis|🌱|fl|botte|legume
-Betteraves|🍠|fl|pc|legume
-Asperges|🌱|fl|botte|legume
-Fenouil|🌿|fl|pc|legume
-Persil|🌿|fl|botte|herbe aromate
-Coriandre|🌿|fl|botte|herbe aromate
-Basilic|🌿|fl|pot|herbe aromate
-Menthe|🌿|fl|botte|herbe aromate
-Ciboulette|🌿|fl|botte|herbe aromate
-Baguette|🥖|bo|pc|pain
-Pain de campagne|🍞|bo|pc|
-Pain de mie|🍞|bo|paquet|
-Pain complet|🍞|bo|pc|
-Croissants|🥐|bo|pc|viennoiserie
-Pains au chocolat|🥐|bo|pc|viennoiserie chocolatine
-Brioche|🍞|bo|pc|viennoiserie
-Biscottes|🍞|bo|paquet|
-Tortillas|🫓|bo|paquet|wrap
-Pain pita|🫓|bo|paquet|
-Bagels|🥯|bo|paquet|
-Crêpes|🥞|bo|paquet|
-Gâteau|🍰|bo|pc|dessert
-Lait|🥛|cr|l|
-Lait d'avoine|🥛|cr|l|vegetal
-Lait d'amande|🥛|cr|l|vegetal
-Beurre|🧈|cr|pc|
-Œufs|🥚|cr|pc|oeuf
-Yaourts|🥣|cr|pack|yaourt
-Yaourts aux fruits|🥣|cr|pack|yaourt
-Fromage blanc|🥣|cr|pot|
-Skyr|🥣|cr|pot|yaourt
-Crème fraîche|🥛|cr|pot|creme
-Crème liquide|🥛|cr|brique|creme
-Crème dessert|🍮|cr|pack|dessert
-Emmental râpé|🧀|cr|sachet|fromage
-Comté|🧀|cr|g|fromage
-Camembert|🧀|cr|pc|fromage
-Mozzarella|🧀|cr|pc|fromage
-Feta|🧀|cr|pc|fromage
-Parmesan|🧀|cr|g|fromage
-Chèvre|🧀|cr|pc|fromage
-Raclette|🧀|cr|g|fromage
-Pâte feuilletée|🥧|cr|pc|pate tarte
-Pâte brisée|🥧|cr|pc|pate tarte
-Pâte à pizza|🍕|cr|pc|pate
-Poulet|🍗|vp|g|viande volaille blanc filet
-Cuisses de poulet|🍗|vp|pc|viande volaille
-Escalopes de dinde|🍗|vp|pc|viande volaille
-Steaks hachés|🥩|vp|pc|viande boeuf
-Bœuf|🥩|vp|g|viande
-Viande hachée|🥩|vp|g|viande boeuf
-Porc|🍖|vp|g|viande cote
-Agneau|🍖|vp|g|viande
-Saucisses|🌭|vp|pc|viande
-Merguez|🌭|vp|pc|viande saucisse
-Lardons|🥓|vp|g|viande porc
-Bacon|🥓|vp|tranche|viande
-Jambon|🍖|vp|tranche|viande charcuterie
-Jambon cru|🍖|vp|tranche|viande charcuterie
-Saucisson|🍖|vp|pc|charcuterie
-Chorizo|🍖|vp|pc|charcuterie
-Saumon|🐟|vp|g|poisson
-Saumon fumé|🐟|vp|tranche|poisson
-Cabillaud|🐟|vp|g|poisson
-Crevettes|🦐|vp|g|fruit de mer
-Moules|🦪|vp|kg|fruit de mer
-Surimi|🦀|vp|paquet|poisson
-Tofu|🍢|vp|pc|vegetarien
-Pâtes|🍝|es|paquet|spaghetti penne
-Riz|🍚|es|kg|
-Semoule|🍚|es|paquet|couscous
-Quinoa|🌾|es|paquet|
-Nouilles|🍜|es|paquet|ramen
-Lentilles|🫘|es|g|legumineuse
-Pois chiches|🫘|es|boite|legumineuse
-Haricots rouges|🫘|es|boite|legumineuse
-Farine|🌾|es|kg|
-Huile d'olive|🫒|es|bouteille|
-Huile de tournesol|🌻|es|bouteille|
-Vinaigre|🍶|es|bouteille|
-Sel|🧂|es|paquet|
-Poivre|🧂|es|pot|epice
-Épices|🌶️|es|pot|
-Moutarde|🫙|es|pot|condiment
-Mayonnaise|🫙|es|pot|condiment
-Ketchup|🍅|es|bouteille|condiment
-Sauce tomate|🥫|es|bocal|coulis
-Sauce soja|🍶|es|bouteille|condiment
-Pesto|🌿|es|pot|sauce
-Bouillon|🍲|es|boite|cube
-Soupe|🍲|es|brique|
-Conserves|🥫|es|boite|
-Maïs en boîte|🌽|es|boite|conserve
-Thon|🐟|es|boite|poisson conserve
-Sardines|🐟|es|boite|poisson conserve
-Olives|🫒|es|bocal|apero
-Cornichons|🥒|es|bocal|
-Chips|🥔|es|paquet|apero
-Biscuits apéro|🥨|es|paquet|apero
-Cacahuètes|🥜|es|paquet|apero
-Amandes|🥜|es|sachet|fruit sec
-Noix|🌰|es|sachet|fruit sec
-Céréales|🥣|es|boite|petit dejeuner
-Flocons d'avoine|🥣|es|paquet|petit dejeuner
-Muesli|🥣|es|paquet|petit dejeuner granola
-Sucre|🍬|su|kg|
-Chocolat|🍫|su|tablette|
-Pâte à tartiner|🍫|su|pot|
-Confiture|🫙|su|pot|
-Miel|🍯|su|pot|
-Biscuits|🍪|su|paquet|gateau
-Madeleines|🧁|su|paquet|gateau
-Bonbons|🍬|su|sachet|
-Compote|🍏|su|pack|
-Café|☕|su|paquet|
-Capsules de café|☕|su|boite|cafe
-Thé|🍵|su|boite|infusion
-Cacao|☕|su|boite|chocolat poudre
-Levure|🧁|su|sachet|patisserie
-Sucre vanillé|🍦|su|sachet|patisserie
-Popcorn|🍿|su|paquet|
-Eau|💧|bs|pack|bouteille
-Eau gazeuse|🫧|bs|bouteille|
-Jus d'orange|🧃|bs|l|
-Jus de pomme|🧃|bs|l|
-Soda|🥤|bs|bouteille|
-Limonade|🥤|bs|bouteille|
-Sirop|🧃|bs|bouteille|
-Bière|🍺|bs|pack|alcool
-Vin rouge|🍷|bs|bouteille|alcool
-Vin blanc|🥂|bs|bouteille|alcool
-Rosé|🍷|bs|bouteille|alcool vin
-Champagne|🍾|bs|bouteille|alcool
-Kombucha|🧋|bs|bouteille|
-Glaces|🍨|sg|pc|creme glacee dessert
-Pizza surgelée|🍕|sg|pc|
-Frites|🍟|sg|sachet|
-Légumes surgelés|🥦|sg|sachet|
-Poisson pané|🐟|sg|boite|
-Glaçons|🧊|sg|sachet|
-Papier toilette|🧻|hy|paquet|pq
-Mouchoirs|🤧|hy|paquet|
-Dentifrice|🪥|hy|pc|
-Brosses à dents|🪥|hy|pc|
-Shampoing|🧴|hy|bouteille|
-Après-shampoing|🧴|hy|bouteille|
-Gel douche|🧴|hy|bouteille|
-Savon|🧼|hy|pc|
-Déodorant|🧴|hy|pc|
-Rasoirs|🪒|hy|paquet|
-Mousse à raser|🪒|hy|pc|
-Coton|☁️|hy|paquet|
-Cotons-tiges|🧴|hy|boite|
-Protections hygiéniques|🌸|hy|paquet|serviette tampon
-Crème hydratante|🧴|hy|pc|
-Crème solaire|☀️|hy|pc|
-Pansements|🩹|hy|boite|pharmacie
-Pharmacie|💊|hy|boite|medicament
-Liquide vaisselle|🧽|en|bouteille|
-Éponges|🧽|en|paquet|
-Lessive|🧺|en|pc|linge
-Adoucissant|🧺|en|bouteille|linge
-Pastilles lave-vaisselle|🫧|en|paquet|
-Sacs poubelle|🗑️|en|rouleau|
-Essuie-tout|🧻|en|rouleau|sopalin
-Nettoyant multi-usage|🧴|en|bouteille|menage
-Javel|🧪|en|bouteille|menage
-Papier aluminium|📜|en|rouleau|alu
-Papier cuisson|📜|en|rouleau|
-Film alimentaire|📜|en|rouleau|
-Sacs congélation|🛍️|en|paquet|
-Ampoules|💡|en|pc|
-Piles|🔋|en|paquet|
-Allumettes|🔥|en|boite|
-Bougies|🕯️|en|pc|
-Couches|🧷|bb|paquet|bebe
-Lingettes|🧻|bb|paquet|bebe
-Lait infantile|🍼|bb|boite|bebe
-Petits pots|🍼|bb|pc|bebe
-Croquettes chat|🐈|an|kg|animal
-Croquettes chien|🐕|an|kg|animal
-Pâtée|🐾|an|boite|animal
-Litière|🐾|an|sac|animal chat`;
+Pommes|🍎|fl|pc|fruit|8-4
+Poires|🍐|fl|pc|fruit|8-2
+Bananes|🍌|fl|pc|fruit|
+Oranges|🍊|fl|pc|fruit agrume|12-4
+Clémentines|🍊|fl|kg|fruit agrume mandarine|11-2
+Citrons|🍋|fl|pc|agrume|11-4
+Citrons verts|🍋|fl|pc|agrume lime|
+Pamplemousse|🍊|fl|pc|agrume|12-4
+Raisin|🍇|fl|g|fruit|8-10
+Fraises|🍓|fl|barquette|fruit|4-7
+Framboises|🍓|fl|barquette|fruit|6-9
+Myrtilles|🫐|fl|barquette|fruit|7-9
+Cerises|🍒|fl|g|fruit|5-7
+Pêches|🍑|fl|pc|fruit|6-9
+Abricots|🍑|fl|g|fruit|6-8
+Kiwis|🥝|fl|pc|fruit|11-4
+Ananas|🍍|fl|pc|fruit|
+Mangue|🥭|fl|pc|fruit|
+Melon|🍈|fl|pc|fruit|6-9
+Pastèque|🍉|fl|pc|fruit|7-9
+Noix de coco|🥥|fl|pc|fruit|
+Avocats|🥑|fl|pc||
+Tomates|🍅|fl|g|legume|6-9
+Tomates cerises|🍅|fl|barquette|legume|6-9
+Concombre|🥒|fl|pc|legume|5-9
+Courgettes|🥒|fl|pc|legume|6-9
+Aubergine|🍆|fl|pc|legume|6-9
+Poivrons|🫑|fl|pc|legume|7-9
+Piments|🌶️|fl|pc||7-9
+Carottes|🥕|fl|kg|legume|1-12
+Pommes de terre|🥔|fl|kg|legume patate|1-12
+Patates douces|🍠|fl|pc|legume|9-12
+Oignons|🧅|fl|pc|legume|1-12
+Oignons rouges|🧅|fl|pc|legume|1-12
+Échalotes|🧅|fl|pc|legume|1-12
+Ail|🧄|fl|pc||6-2
+Gingembre|🫚|fl|g||
+Salade|🥬|fl|pc|legume laitue|4-10
+Roquette|🥬|fl|sachet|salade|4-10
+Mâche|🥬|fl|sachet|salade|10-3
+Épinards|🥬|fl|g|legume|3-5,9-11
+Chou|🥬|fl|pc|legume|10-3
+Poireaux|🥬|fl|pc|legume|9-4
+Céleri|🥬|fl|pc|legume|9-3
+Brocoli|🥦|fl|pc|legume|6-11
+Chou-fleur|🥦|fl|pc|legume|9-4
+Champignons|🍄|fl|barquette|legume|1-12
+Maïs|🌽|fl|pc||8-10
+Haricots verts|🫛|fl|g|legume|6-9
+Petits pois|🫛|fl|g|legume|5-7
+Potiron|🎃|fl|pc|legume courge citrouille butternut|9-1
+Radis|🌱|fl|botte|legume|3-7
+Betteraves|🍠|fl|pc|legume|7-3
+Asperges|🌱|fl|botte|legume|4-6
+Fenouil|🌿|fl|pc|legume|6-10
+Persil|🌿|fl|botte|herbe aromate|4-11
+Coriandre|🌿|fl|botte|herbe aromate|5-10
+Basilic|🌿|fl|pot|herbe aromate|6-9
+Menthe|🌿|fl|botte|herbe aromate|5-9
+Ciboulette|🌿|fl|botte|herbe aromate|3-10
+Nectarines|🍑|fl|pc|fruit|6-9
+Prunes|🫐|fl|g|fruit|7-9
+Mirabelles|🟡|fl|g|fruit prune|8-9
+Figues|🟣|fl|pc|fruit|8-10
+Kakis|🟠|fl|pc|fruit|10-12
+Coings|🍐|fl|pc|fruit|10-11
+Châtaignes|🌰|fl|g|fruit marron|10-12
+Rhubarbe|🌱|fl|botte|fruit|4-6
+Groseilles|🍒|fl|barquette|fruit|6-8
+Cassis|🫐|fl|barquette|fruit|7-8
+Courge butternut|🎃|fl|pc|legume courge|9-1
+Potimarron|🎃|fl|pc|legume courge|9-1
+Panais|🥕|fl|pc|legume racine|10-3
+Navets|🥔|fl|botte|legume racine|10-3
+Topinambours|🥔|fl|g|legume racine|10-3
+Céleri-rave|🥔|fl|pc|legume|10-3
+Endives|🥬|fl|g|legume chicon|10-4
+Artichauts|🌼|fl|pc|legume|5-9
+Blettes|🥬|fl|botte|legume|6-11
+Cresson|🌿|fl|botte|salade|3-5
+Choux de Bruxelles|🥬|fl|g|legume chou|10-2
+Chou rouge|🥬|fl|pc|legume chou|9-3
+Fèves|🫛|fl|g|legume|5-7
+Baguette|🥖|bo|pc|pain|
+Pain de campagne|🍞|bo|pc||
+Pain de mie|🍞|bo|paquet||
+Pain complet|🍞|bo|pc||
+Croissants|🥐|bo|pc|viennoiserie|
+Pains au chocolat|🥐|bo|pc|viennoiserie chocolatine|
+Brioche|🍞|bo|pc|viennoiserie|
+Biscottes|🍞|bo|paquet||
+Tortillas|🫓|bo|paquet|wrap|
+Pain pita|🫓|bo|paquet||
+Bagels|🥯|bo|paquet||
+Crêpes|🥞|bo|paquet||
+Gâteau|🍰|bo|pc|dessert|
+Lait|🥛|cr|l||
+Lait d'avoine|🥛|cr|l|vegetal|
+Lait d'amande|🥛|cr|l|vegetal|
+Beurre|🧈|cr|pc||
+Œufs|🥚|cr|pc|oeuf|
+Yaourts|🥣|cr|pack|yaourt|
+Yaourts aux fruits|🥣|cr|pack|yaourt|
+Fromage blanc|🥣|cr|pot||
+Skyr|🥣|cr|pot|yaourt|
+Crème fraîche|🥛|cr|pot|creme|
+Crème liquide|🥛|cr|brique|creme|
+Crème dessert|🍮|cr|pack|dessert|
+Emmental râpé|🧀|cr|sachet|fromage|
+Comté|🧀|cr|g|fromage|
+Camembert|🧀|cr|pc|fromage|
+Mozzarella|🧀|cr|pc|fromage|
+Feta|🧀|cr|pc|fromage|
+Parmesan|🧀|cr|g|fromage|
+Chèvre|🧀|cr|pc|fromage|
+Raclette|🧀|cr|g|fromage|
+Pâte feuilletée|🥧|cr|pc|pate tarte|
+Pâte brisée|🥧|cr|pc|pate tarte|
+Pâte à pizza|🍕|cr|pc|pate|
+Poulet|🍗|vp|g|viande volaille blanc filet|
+Cuisses de poulet|🍗|vp|pc|viande volaille|
+Escalopes de dinde|🍗|vp|pc|viande volaille|
+Steaks hachés|🥩|vp|pc|viande boeuf|
+Bœuf|🥩|vp|g|viande|
+Viande hachée|🥩|vp|g|viande boeuf|
+Porc|🍖|vp|g|viande cote|
+Agneau|🍖|vp|g|viande|
+Saucisses|🌭|vp|pc|viande|
+Merguez|🌭|vp|pc|viande saucisse|
+Lardons|🥓|vp|g|viande porc|
+Bacon|🥓|vp|tranche|viande|
+Jambon|🍖|vp|tranche|viande charcuterie|
+Jambon cru|🍖|vp|tranche|viande charcuterie|
+Saucisson|🍖|vp|pc|charcuterie|
+Chorizo|🍖|vp|pc|charcuterie|
+Saumon|🐟|vp|g|poisson|
+Saumon fumé|🐟|vp|tranche|poisson|
+Cabillaud|🐟|vp|g|poisson|
+Crevettes|🦐|vp|g|fruit de mer|
+Moules|🦪|vp|kg|fruit de mer|7-1
+Huîtres|🦪|vp|douzaine|fruit de mer|9-4
+Surimi|🦀|vp|paquet|poisson|
+Tofu|🍢|vp|pc|vegetarien|
+Pâtes|🍝|es|paquet|spaghetti penne|
+Riz|🍚|es|kg||
+Semoule|🍚|es|paquet|couscous|
+Quinoa|🌾|es|paquet||
+Nouilles|🍜|es|paquet|ramen|
+Lentilles|🫘|es|g|legumineuse|
+Pois chiches|🫘|es|boite|legumineuse|
+Haricots rouges|🫘|es|boite|legumineuse|
+Farine|🌾|es|kg||
+Huile d'olive|🫒|es|bouteille||
+Huile de tournesol|🌻|es|bouteille||
+Vinaigre|🍶|es|bouteille||
+Sel|🧂|es|paquet||
+Poivre|🧂|es|pot|epice|
+Épices|🌶️|es|pot||
+Moutarde|🫙|es|pot|condiment|
+Mayonnaise|🫙|es|pot|condiment|
+Ketchup|🍅|es|bouteille|condiment|
+Sauce tomate|🥫|es|bocal|coulis|
+Sauce soja|🍶|es|bouteille|condiment|
+Pesto|🌿|es|pot|sauce|
+Bouillon|🍲|es|boite|cube|
+Soupe|🍲|es|brique||
+Conserves|🥫|es|boite||
+Maïs en boîte|🌽|es|boite|conserve|
+Thon|🐟|es|boite|poisson conserve|
+Sardines|🐟|es|boite|poisson conserve|
+Olives|🫒|es|bocal|apero|
+Cornichons|🥒|es|bocal||
+Chips|🥔|es|paquet|apero|
+Biscuits apéro|🥨|es|paquet|apero|
+Cacahuètes|🥜|es|paquet|apero|
+Amandes|🥜|es|sachet|fruit sec|
+Noix|🌰|es|sachet|fruit sec|
+Céréales|🥣|es|boite|petit dejeuner|
+Flocons d'avoine|🥣|es|paquet|petit dejeuner|
+Muesli|🥣|es|paquet|petit dejeuner granola|
+Sucre|🍬|su|kg||
+Chocolat|🍫|su|tablette||
+Pâte à tartiner|🍫|su|pot||
+Confiture|🫙|su|pot||
+Miel|🍯|su|pot||
+Biscuits|🍪|su|paquet|gateau|
+Madeleines|🧁|su|paquet|gateau|
+Bonbons|🍬|su|sachet||
+Compote|🍏|su|pack||
+Café|☕|su|paquet||
+Capsules de café|☕|su|boite|cafe|
+Thé|🍵|su|boite|infusion|
+Cacao|☕|su|boite|chocolat poudre|
+Levure|🧁|su|sachet|patisserie|
+Sucre vanillé|🍦|su|sachet|patisserie|
+Popcorn|🍿|su|paquet||
+Eau|💧|bs|pack|bouteille|
+Eau gazeuse|🫧|bs|bouteille||
+Jus d'orange|🧃|bs|l||
+Jus de pomme|🧃|bs|l||
+Soda|🥤|bs|bouteille||
+Limonade|🥤|bs|bouteille||
+Sirop|🧃|bs|bouteille||
+Bière|🍺|bs|pack|alcool|
+Vin rouge|🍷|bs|bouteille|alcool|
+Vin blanc|🥂|bs|bouteille|alcool|
+Rosé|🍷|bs|bouteille|alcool vin|
+Champagne|🍾|bs|bouteille|alcool|
+Kombucha|🧋|bs|bouteille||
+Glaces|🍨|sg|pc|creme glacee dessert|
+Pizza surgelée|🍕|sg|pc||
+Frites|🍟|sg|sachet||
+Légumes surgelés|🥦|sg|sachet||
+Poisson pané|🐟|sg|boite||
+Glaçons|🧊|sg|sachet||
+Papier toilette|🧻|hy|paquet|pq|
+Mouchoirs|🤧|hy|paquet||
+Dentifrice|🪥|hy|pc||
+Brosses à dents|🪥|hy|pc||
+Shampoing|🧴|hy|bouteille||
+Après-shampoing|🧴|hy|bouteille||
+Gel douche|🧴|hy|bouteille||
+Savon|🧼|hy|pc||
+Déodorant|🧴|hy|pc||
+Rasoirs|🪒|hy|paquet||
+Mousse à raser|🪒|hy|pc||
+Coton|☁️|hy|paquet||
+Cotons-tiges|🧴|hy|boite||
+Protections hygiéniques|🌸|hy|paquet|serviette tampon|
+Crème hydratante|🧴|hy|pc||
+Crème solaire|☀️|hy|pc||
+Pansements|🩹|hy|boite|pharmacie|
+Pharmacie|💊|hy|boite|medicament|
+Liquide vaisselle|🧽|en|bouteille||
+Éponges|🧽|en|paquet||
+Lessive|🧺|en|pc|linge|
+Adoucissant|🧺|en|bouteille|linge|
+Pastilles lave-vaisselle|🫧|en|paquet||
+Sacs poubelle|🗑️|en|rouleau||
+Essuie-tout|🧻|en|rouleau|sopalin|
+Nettoyant multi-usage|🧴|en|bouteille|menage|
+Javel|🧪|en|bouteille|menage|
+Papier aluminium|📜|en|rouleau|alu|
+Papier cuisson|📜|en|rouleau||
+Film alimentaire|📜|en|rouleau||
+Sacs congélation|🛍️|en|paquet||
+Ampoules|💡|en|pc||
+Piles|🔋|en|paquet||
+Allumettes|🔥|en|boite||
+Bougies|🕯️|en|pc||
+Couches|🧷|bb|paquet|bebe|
+Lingettes|🧻|bb|paquet|bebe|
+Lait infantile|🍼|bb|boite|bebe|
+Petits pots|🍼|bb|pc|bebe|
+Croquettes chat|🐈|an|kg|animal|
+Croquettes chien|🐕|an|kg|animal|
+Pâtée|🐾|an|boite|animal|
+Litière|🐾|an|sac|animal chat|`;
+function parseMonths(str) {
+  if (!str) return null;
+  const set = new Set();
+  str.split(",").forEach(r => {
+    const [a, b] = r.split("-").map(Number);
+    for (let m = a, guard = 0; guard < 12; guard++) { set.add(m); if (m === (b || a)) break; m = m % 12 + 1; }
+  });
+  return [...set];
+}
 const DEFAULT_PRODUCTS = RAW.trim().split("\n").map(l => {
-  const [name, icon, cat, unit, tags] = l.split("|");
-  return { pid: keyOf(name), name, icon, cat, unit, tags: tags || "" };
+  const [name, icon, cat, unit, tags, months] = l.split("|");
+  return { pid: keyOf(name), name, icon, cat, unit, tags: tags || "", months: parseMonths(months) };
 });
+const SEASON_OF = Object.fromEntries(DEFAULT_PRODUCTS.filter(p => p.months).map(p => [p.pid, p.months]));
+
+/* ---------- saisons ---------- */
+const MONTHS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+const SEASONS = [
+  { id: "printemps", label: "Printemps", icon: "🌷", months: [3, 4, 5] },
+  { id: "ete", label: "Été", icon: "☀️", months: [6, 7, 8] },
+  { id: "automne", label: "Automne", icon: "🍂", months: [9, 10, 11] },
+  { id: "hiver", label: "Hiver", icon: "❄️", months: [12, 1, 2] }
+];
+const nowMonth = () => new Date().getMonth() + 1;
+const curSeason = () => SEASONS.find(x => x.months.includes(nowMonth()));
+const monthsOf = pid => SEASON_OF[pid] || null;
+const inSeasonNow = pid => { const m = monthsOf(pid); return !!(m && m.length < 12 && m.includes(nowMonth())); };
+function seasonText(pid) {
+  const m = monthsOf(pid); if (!m) return "";
+  if (m.length === 12) return "Toute l'année";
+  return (m.includes(nowMonth()) ? "🌱 De saison" : "Hors saison") + " · " + monthRange(m);
+}
+function monthRange(m) {
+  // retrouve le début d'une plage continue (en tenant compte du passage décembre → janvier)
+  const set = new Set(m);
+  const starts = m.filter(x => !set.has(x === 1 ? 12 : x - 1)).sort((a, b) => a - b);
+  return starts.map(a => { let b = a; while (set.has(b % 12 + 1) && b % 12 + 1 !== a) b = b % 12 + 1; return a === b ? MONTHS[a - 1] : MONTHS[a - 1] + " → " + MONTHS[b - 1]; }).join(", ");
+}
+function seasonalProducts(months) {
+  return DEFAULT_PRODUCTS.filter(p => p.months && p.months.length < 12 && p.months.some(x => months.includes(x)))
+    .map(p => productOf(p.pid) || p);
+}
+const isFruit = p => p.cat === "fl" && /\b(fruit|agrume)\b/.test(p.tags || "");
 
 const ICONS = ("🍎 🍏 🍐 🍊 🍋 🍌 🍉 🍇 🍓 🫐 🍈 🍒 🍑 🥭 🍍 🥥 🥝 🍅 🍆 🥑 🫛 🥦 🥬 🥒 🌶️ 🫑 🌽 🥕 🫒 🧄 🧅 🥔 🍠 🫚 🍄 🌰 🥜 🫘 🌿 🌱 🍞 🥐 🥖 🫓 🥨 🥯 🥞 🧇 🧀 🍖 🍗 🥩 🥓 🍔 🍟 🍕 🌭 🥪 🌮 🌯 🥙 🧆 🥚 🍳 🥘 🍲 🥣 🥗 🍿 🧈 🧂 🥫 🍱 🍘 🍙 🍚 🍛 🍜 🍝 🍢 🍣 🍤 🥟 🦀 🦞 🦐 🦑 🦪 🐟 🍦 🍧 🍨 🍩 🍪 🎂 🍰 🧁 🥧 🍫 🍬 🍭 🍮 🍯 🍼 🥛 ☕ 🫖 🍵 🧃 🥤 🧋 🍶 🍾 🍷 🍸 🍹 🍺 🥂 🧊 💧 🫧 🫙 🧴 🧼 🧽 🧻 🪥 🪒 🧺 🧹 🧪 🧷 💊 🩹 🌸 💡 🔋 🕯️ 🔥 🗑️ 🛍️ 📜 🎁 🎈 🐾 🐈 🐕 🐟 🌻 💐 🪴 🛒 🧺 📦 ✏️ 📰 🧦 👕 🧤 🧸 ⭐").split(" ");
 const LIST_ICONS = ["🛒", "🧺", "🏠", "🥖", "🥕", "🎉", "🍷", "🏖️", "🎄", "🍕", "💊", "🐾", "🍼", "🧽", "🏕️", "🎂"];
@@ -1119,14 +1185,19 @@ function openItemFor(pid) { return S.items.find(i => i.pid === pid && !i.checked
 function ptileHTML(p) {
   const it = S.items.find(i => i.pid === p.pid && !i.checked);
   const q = it ? (fmtQty(it.qty, it.unit, it.unitLabel) || "✓") : "";
-  return `<button class="tile ptile${it ? " inlist" : ""}" data-pid="${esc(p.pid)}"><span class="ic">${esc(p.icon)}</span><span class="nm">${esc(p.name)}</span>${q ? `<span class="q">${esc(q)}</span>` : ""}</button>`;
+  const ssn = inSeasonNow(p.pid) ? `<span class="ssn" title="De saison">🌱</span>` : "";
+  return `<button class="tile ptile${it ? " inlist" : ""}" data-pid="${esc(p.pid)}">${ssn}<span class="ic">${esc(p.icon)}</span><span class="nm">${esc(p.name)}</span>${q ? `<span class="q">${esc(q)}</span>` : ""}</button>`;
 }
 function renderSearch() {
   const box = $("#searchView");
   const q = S.q.trim();
   if (q) {
     const { list, exact } = searchProducts(q);
-    let html = `<div class="grid">`;
+    const nq = norm(q);
+    let html = "";
+    const sKey = /^(de )?saison/.test(nq) ? "saison" : (SEASONS.find(x => norm(x.label).startsWith(nq) && nq.length >= 3) || {}).id;
+    if (sKey) html += seasonBlock(sKey);
+    html += `<div class="grid">`;
     if (!exact) html += `<button class="tile ptile create" data-create="1"><span class="ic">＋</span><span class="nm">Créer « ${esc(q)} »</span></button>`;
     html += list.map(ptileHTML).join("") + `</div>`;
     if (!list.length) html += `<p class="hint">Aucun produit trouvé — crée-le avec son icône.</p>`;
@@ -1135,11 +1206,17 @@ function renderSearch() {
   }
   const freq = S.cat.freq || {};
   const hasFreq = Object.keys(freq).length > 0;
-  if (!S.chip) S.chip = hasFreq ? "freq" : "fl";
+  if (!S.chip) S.chip = hasFreq ? "freq" : "saison";
   const custom = Object.keys(S.cat.products || {}).length > 0;
   let chips = `<div class="chips">` + (hasFreq ? `<button class="chip${S.chip === "freq" ? " on" : ""}" data-chip="freq">⭐ Habituels</button>` : "") +
     (custom ? `<button class="chip${S.chip === "mine" ? " on" : ""}" data-chip="mine">✏️ Mes produits</button>` : "") +
+    `<button class="chip${S.chip === "saison" ? " on" : ""}" data-chip="saison">🌱 De saison</button>` +
+    SEASONS.map(x => `<button class="chip${S.chip === x.id ? " on" : ""}" data-chip="${x.id}">${x.icon} ${x.label}${x.id === curSeason().id ? " •" : ""}</button>`).join("") +
     CATS.map(([id, label, icon]) => `<button class="chip${S.chip === id ? " on" : ""}" data-chip="${id}">${icon} ${esc(label)}</button>`).join("") + `</div>`;
+  if (S.chip === "saison" || SEASONS.some(x => x.id === S.chip)) {
+    box.innerHTML = chips + seasonBlock(S.chip) + `<p class="hint">🌱 = de saison ce mois-ci en France · tape un nom pour chercher.</p>`;
+    return;
+  }
   let prods;
   const all = allProducts();
   if (S.chip === "freq") prods = all.filter(p => freq[p.pid]).sort((a, b) => freq[b.pid] - freq[a.pid]).slice(0, 36);
@@ -1148,6 +1225,21 @@ function renderSearch() {
   box.innerHTML = chips + `<div class="grid">${prods.map(ptileHTML).join("")}</div>` +
     (!prods.length ? `<p class="hint">Rien ici pour l'instant.</p>` : "") +
     `<p class="hint">Tape un nom pour chercher, ou crée ton propre produit.</p>`;
+}
+function seasonBlock(key) {
+  const m = nowMonth();
+  let months, title, sub;
+  if (key === "saison") { months = [m]; title = "De saison en " + MONTHS[m - 1]; sub = "Plus de goût, moins cher, produit en France."; }
+  else { const x = SEASONS.find(y => y.id === key); months = x.months; title = x.icon + " " + x.label; sub = months.map(n => MONTHS[n - 1]).join(", ") + (months.includes(m) ? " — c'est maintenant !" : ""); }
+  const prods = seasonalProducts(months);
+  const groups = [
+    ["🍎 Fruits", prods.filter(isFruit)],
+    ["🥕 Légumes & herbes", prods.filter(p => p.cat === "fl" && !isFruit(p))],
+    ["🐟 Mer", prods.filter(p => p.cat !== "fl")]
+  ];
+  const sortFn = (a, b) => (inSeasonNow(b.pid) - inSeasonNow(a.pid)) || a.name.localeCompare(b.name, "fr");
+  return `<div class="seasonhead"><b>${esc(title)}</b><br><span style="color:var(--muted)">${esc(sub)}</span></div>` +
+    groups.filter(g => g[1].length).map(([t, list]) => `<div class="sectitle">${t} · ${list.length}</div><div class="grid" style="margin-bottom:14px">${list.sort(sortFn).map(ptileHTML).join("")}</div>`).join("");
 }
 $("#searchView").addEventListener("click", e => {
   const c = e.target.closest("[data-chip]");
@@ -1204,6 +1296,7 @@ function itemSheet(o) {
       <div class="tt">
         ${edit || create ? `<input class="inp title" id="fName" value="${esc(st.name)}" placeholder="Nom du produit" maxlength="60">` : `<h3>${esc(st.name)}</h3>`}
         <div class="sub">${o.already ? "Déjà dans la liste · " : ""}${CAT[st.cat].icon} ${esc(CAT[st.cat].label)}</div>
+        ${seasonText(base.pid) ? `<div class="sub" style="margin-top:2px">${esc(seasonText(base.pid))}</div>` : ""}
       </div>
     </div>
     <div id="icoBox" class="${showIcons ? "" : "hidden"}">
