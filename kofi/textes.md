@@ -1,6 +1,6 @@
 # Ko-fi — Cabas
 
-Page : https://ko-fi.com/cabas (à adapter à l'adresse choisie)
+Page : https://ko-fi.com/cabas
 Lien de l'app : [adresse Netlify de Cabas]
 
 ## Images

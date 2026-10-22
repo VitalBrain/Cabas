@@ -293,6 +293,7 @@ const FIREBASE = {
   appId: "1:7353078163:web:8b0fdac8cdffe4ce6d1866"
 };
 const SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
+const KOFI = "https://ko-fi.com/cabas";
 
 /* ---------- helpers ---------- */
 const $ = (s, r = document) => r.querySelector(s);
@@ -1144,8 +1145,36 @@ function startRemote(user) {
     if (ls.length) toast(ls.length > 1 ? ls.length + " listes ajoutées à ton compte" : "Ta liste a été ajoutée à ton compte");
   }
 }
+function kofiPopup() {
+  if (lsGet("cabas.kofiNever")) return;
+  const today = new Date().toDateString();
+  if (lsGet("cabas.kofiShown") === today) return;
+  lsSet("cabas.kofiShown", today);
+  setTimeout(() => {
+    if (sheetOpen || S.cur) return;
+    openSheet(`<div class="grab"></div>
+      <div style="text-align:center;padding:6px 4px 0">
+        <div style="font-size:54px;line-height:1">☕🧺</div>
+        <h3 style="font-size:24px;margin:12px 0 8px">Cabas te plaît ?</h3>
+        <p style="color:var(--muted);margin:0 auto;max-width:340px">L'app est gratuite et sans pub. Je la développe seul, sur mon temps libre : un café m'aide à payer l'hébergement et à ajouter de nouvelles recettes.</p>
+      </div>
+      <div style="display:grid;gap:10px;margin-top:22px">
+        <button class="btn primary" data-act="go">☕ Offrir un café sur Ko-fi</button>
+        <button class="btn" data-act="later">Plus tard</button>
+      </div>
+      <button data-act="never" style="display:block;margin:12px auto 0;color:var(--muted);font-size:13px;padding:6px">Ne plus afficher</button>`, sh => {
+      sh.onclick = e => {
+        const a = e.target.closest("[data-act]"); if (!a) return;
+        if (a.dataset.act === "go") { lsSet("cabas.kofiNever", "1"); window.open(KOFI, "_blank", "noopener"); }
+        if (a.dataset.act === "never") lsSet("cabas.kofiNever", "1");
+        closeSheet();
+      };
+    });
+  }, 1200);
+}
 async function afterFirstLists() {
   const code = pendingJoin();
+  if (!code) kofiPopup();
   if (code && S.store.kind === "remote") {
     try { sessionStorage.removeItem("cabas.join"); } catch (e) {}
     try {
@@ -1762,6 +1791,7 @@ function accountSheet() {
     <div class="shead">${st.kind === "remote" ? avatar(st.me).replace('class="avatar"', 'class="avatar" style="width:52px;height:52px;font-size:20px"') : '<span class="bigico">👤</span>'}
       <div class="tt"><h3>${esc(st.kind === "remote" ? st.me.name : "Sans compte")}</h3><div class="sub">${esc(st.kind === "remote" ? st.me.email : "Listes enregistrées sur cet appareil")}</div></div></div>
     <div class="menu">
+      <button data-act="kofi"><span class="mi">☕</span>Soutenir Cabas sur Ko-fi</button>
       <button data-act="catalog"><span class="mi">🏷️</span>Mes produits & unités <span style="color:var(--muted);font-weight:400;margin-left:auto">${nProd + nUnit || ""}</span></button>
       ${!isStandalone() ? `<button data-act="install"><span class="mi">📲</span>Installer l'app</button>` : ""}
       ${st.kind === "local" && canFirebase ? `<button data-act="google"><span class="mi">🔐</span>Se connecter avec Google <span style="color:var(--muted);font-weight:400;font-size:12px;margin-left:auto">tes listes suivent</span></button>` : ""}
@@ -1770,7 +1800,8 @@ function accountSheet() {
     sh.onclick = async e => {
       const a = e.target.closest("[data-act]"); if (!a) return;
       const act = a.dataset.act;
-      if (act === "catalog") replaceSheet(catalogSheet);
+      if (act === "kofi") { window.open(KOFI, "_blank", "noopener"); closeSheet(); }
+      else if (act === "catalog") replaceSheet(catalogSheet);
       else if (act === "install") { replaceSheet(installApp); }
       else if (act === "google") { closeSheet(); signIn(); }
       else if (act === "out") { closeSheet(); lsSet("cabas.mode", "out"); await fb.au.signOut(auth); }
