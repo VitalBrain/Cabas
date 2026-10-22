@@ -23,20 +23,11 @@ Je la développe seul, sur mon temps libre. Un café m'aide à payer l'hébergem
 
 **Cabas est en ligne 🧺**
 
-J'en avais assez des listes de courses griffonnées, des « tu as pris le lait ? » et des doublons. Alors j'ai créé Cabas, une app de liste de courses simple, visuelle et partagée. Elle est disponible pour tout le monde, gratuitement.
+Une liste de courses simple et partagée : une icône par produit, quantité et unité, rangement par rayon, et tout le monde coche en temps réel. En bonus, les fruits et légumes de saison et des recettes dont les ingrédients s'ajoutent en un geste.
 
-Ce qu'elle fait :
-- Une icône par produit, avec quantité et unité (g, kg, L, paquet… ou tes propres unités)
-- Plus de 250 produits prêts à l'emploi, et tu crées les tiens avec l'icône de ton choix
-- La liste se range par rayon, et un appui coche le produit
-- Des listes partagées avec ta famille ou tes colocs, synchronisées en temps réel via ton compte Google
-- Un onglet « De saison » avec les fruits et légumes du mois
-- Des recettes de saison : tu choisis le nombre de personnes, et les ingrédients s'ajoutent à ta liste
-- Ça marche sans réseau au fond du supermarché
+Gratuit, sans pub, sur Android et iPhone 👉 [lien de l'app]
 
-Pour l'installer, ouvre le lien sur ton téléphone puis touche « Installer » (ou, sur iPhone, Partager › « Sur l'écran d'accueil »).
-
-Si l'app te sert, un café ☕ m'aide à la faire évoluer. Et dis-moi en commentaire quelle recette ou quelle fonction tu aimerais voir arriver !
+Si l'app te sert, un café ☕ m'aide à la faire évoluer !
 
 ## Message de remerciement
 
