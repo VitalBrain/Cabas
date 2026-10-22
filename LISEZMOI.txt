@@ -14,8 +14,22 @@ B. Netlify
   Add new site › Import from Git, sans commande de build, dossier de publication "/".
   (Ou glisser ce dossier sur https://app.netlify.com/drop.)
 
-C. Utilisation
-  - « Se connecter avec Google », puis menu du compte › « Installer l'app » (ou menu Chrome).
+C. Installer l'app sur le téléphone
+  - Android (Chrome) : ouvrir l'adresse Netlify › bouton « Installer » (bandeau ou icône ⤓ en haut),
+    ou menu ⋮ › « Installer l'application ». Cabas apparaît dans le tiroir d'applications.
+  - iPhone (Safari) : Partager › « Sur l'écran d'accueil ».
+
+D. Obtenir un vrai fichier APK (ou publier sur le Play Store)
+  1. Aller sur https://www.pwabuilder.com, coller l'adresse Netlify de Cabas, « Start ».
+  2. « Package for stores » › Android › Generate. Télécharger le zip :
+     il contient l'APK (à installer directement) et l'AAB (pour le Play Store),
+     plus une clé de signature (signing.keystore + mots de passe) : LA GARDER, elle sert aux mises à jour.
+  3. Copier le fichier assetlinks.json du zip dans le dossier .well-known/ de ce dépôt
+     (donc .well-known/assetlinks.json), pousser : l'app s'ouvre alors en plein écran, sans barre d'adresse.
+  La connexion Google fonctionne dans l'APK (il s'appuie sur Chrome).
+
+E. Utilisation
+  - « Se connecter avec Google ».
   - Barre de recherche : tape un produit (« pom », « lait »…) ou parcours par rayon.
     Inconnu ? « Créer » : nom, icône (emoji), rayon, unité.
   - Quantité + unité (pièce, g, kg, L, cl, ml, paquet, boîte… ou « + Unité » pour créer la tienne).

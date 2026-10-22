@@ -203,6 +203,7 @@ h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0;letter-spac
     <div id="inviteBanner" class="banner hidden">📨 Tu as été invité·e sur une liste. Connecte-toi avec ton compte Google pour la rejoindre.</div>
     <button class="btn primary" id="btnGoogle"><span class="gicon"><svg width="14" height="14" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg></span>Se connecter avec Google</button>
     <button class="btn ghost" id="btnLocal">Essayer sans compte</button>
+    <button class="btn ghost install-btn hidden" id="btnInstallLogin">📲 Installer l'app sur ce téléphone</button>
     <div class="fine" id="loginFine">Sans compte, les listes restent sur cet appareil et ne peuvent pas être partagées.</div>
   </div>
 </section>
@@ -212,9 +213,15 @@ h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0;letter-spac
   <header class="top"><div class="wrap">
     <h1><span class="em">🧺</span>Mes listes</h1>
     <span class="sync" id="syncDot" title=""></span>
+    <button class="icon-btn install-btn hidden" id="btnInstallHome" aria-label="Installer l'app" title="Installer l'app"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
     <button class="icon-btn" id="btnAccount" aria-label="Compte"></button>
   </div></header>
   <main class="wrap">
+    <div class="banner install-btn hidden" id="installBanner" style="display:flex;align-items:center;gap:12px;margin:6px 0 12px">
+      <span style="font-size:28px">📲</span><span style="flex:1"><b>Installe Cabas</b><br><span style="color:var(--muted);font-size:13px">Icône sur l'écran d'accueil, plein écran, marche hors ligne.</span></span>
+      <button class="btn primary" id="btnInstallBanner" style="height:40px;padding:0 14px">Installer</button>
+      <button class="icon-btn" id="btnInstallDismiss" aria-label="Plus tard" style="width:30px;height:30px;font-size:16px">✕</button>
+    </div>
     <div class="lists" id="lists"></div>
   </main>
   <button class="btn primary fab" id="btnNewList">＋ Nouvelle liste</button>
@@ -1426,7 +1433,7 @@ function accountSheet() {
       <div class="tt"><h3>${esc(st.kind === "remote" ? st.me.name : "Sans compte")}</h3><div class="sub">${esc(st.kind === "remote" ? st.me.email : "Listes enregistrées sur cet appareil")}</div></div></div>
     <div class="menu">
       <button data-act="catalog"><span class="mi">🏷️</span>Mes produits & unités <span style="color:var(--muted);font-weight:400;margin-left:auto">${nProd + nUnit || ""}</span></button>
-      ${installPrompt ? `<button data-act="install"><span class="mi">📲</span>Installer l'app</button>` : ""}
+      ${!isStandalone() ? `<button data-act="install"><span class="mi">📲</span>Installer l'app</button>` : ""}
       ${st.kind === "local" && canFirebase ? `<button data-act="google"><span class="mi">🔐</span>Se connecter avec Google <span style="color:var(--muted);font-weight:400;font-size:12px;margin-left:auto">tes listes suivent</span></button>` : ""}
       ${st.kind === "remote" ? `<button class="red" data-act="out"><span class="mi">🚪</span>Se déconnecter</button>` : `<button data-act="exit"><span class="mi">↩️</span>Retour à l'écran d'accueil</button>`}
     </div>`, sh => {
@@ -1434,7 +1441,7 @@ function accountSheet() {
       const a = e.target.closest("[data-act]"); if (!a) return;
       const act = a.dataset.act;
       if (act === "catalog") replaceSheet(catalogSheet);
-      else if (act === "install") { closeSheet(); installPrompt.prompt(); installPrompt = null; }
+      else if (act === "install") { replaceSheet(installApp); }
       else if (act === "google") { closeSheet(); signIn(); }
       else if (act === "out") { closeSheet(); lsSet("cabas.mode", "out"); await fb.au.signOut(auth); }
       else if (act === "exit") { closeSheet(); stopAll(); S.store = null; lsSet("cabas.mode", "out"); show("scrLogin"); }
@@ -1510,7 +1517,43 @@ function toast(msg, actLabel, act) {
 }
 
 /* ---------- PWA ---------- */
-addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; });
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+function isStandalone() { return matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; }
+function refreshInstallUI() {
+  const can = !isStandalone() && canFirebase && (installPrompt || isIOS);
+  document.querySelectorAll(".install-btn").forEach(el => el.classList.toggle("hidden", !can));
+  if (can && lsGet("cabas.installDismissed")) $("#installBanner").classList.add("hidden");
+}
+async function installApp() {
+  if (installPrompt) {
+    if (sheetOpen) closeSheet();
+    installPrompt.prompt();
+    const r = await installPrompt.userChoice.catch(() => null);
+    installPrompt = null;
+    if (r && r.outcome === "accepted") toast("Cabas s'installe sur ton écran d'accueil 🎉");
+    refreshInstallUI();
+    return;
+  }
+  const ios = isIOS;
+  openSheet(`<div class="grab"></div>
+    <div class="shead"><span class="bigico">📲</span><div class="tt"><h3>Installer Cabas</h3><div class="sub">Une vraie icône sur ton écran d'accueil</div></div></div>
+    ${ios ? `<div class="menu">
+      <div class="mrow"><span class="em">1️⃣</span><div class="info"><b>Ouvre Cabas dans Safari</b><span>L'installation passe par Safari sur iPhone</span></div></div>
+      <div class="mrow"><span class="em">2️⃣</span><div class="info"><b>Touche le bouton Partager</b><span>Le carré avec une flèche vers le haut</span></div></div>
+      <div class="mrow"><span class="em">3️⃣</span><div class="info"><b>« Sur l'écran d'accueil »</b><span>Puis « Ajouter »</span></div></div></div>`
+    : `<div class="menu">
+      <div class="mrow"><span class="em">1️⃣</span><div class="info"><b>Ouvre Cabas dans Chrome</b><span>Sur Android, Chrome gère l'installation</span></div></div>
+      <div class="mrow"><span class="em">2️⃣</span><div class="info"><b>Menu ⋮ en haut à droite</b><span></span></div></div>
+      <div class="mrow"><span class="em">3️⃣</span><div class="info"><b>« Installer l'application »</b><span>ou « Ajouter à l'écran d'accueil »</span></div></div></div>`}
+    <div class="sacts"><button class="btn primary" data-act="close">Compris</button></div>`, sh => {
+    sh.onclick = e => { if (e.target.closest("[data-act=close]")) closeSheet(); };
+  });
+}
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; refreshInstallUI(); });
+addEventListener("appinstalled", () => { installPrompt = null; refreshInstallUI(); toast("Cabas est installée 🎉"); });
+["btnInstallLogin", "btnInstallHome", "btnInstallBanner"].forEach(id => $("#" + id).addEventListener("click", installApp));
+$("#btnInstallDismiss").addEventListener("click", () => { lsSet("cabas.installDismissed", "1"); $("#installBanner").classList.add("hidden"); });
+refreshInstallUI();
 if ("serviceWorker" in navigator && canFirebase) navigator.serviceWorker.register("sw.js").catch(() => {});
 
 boot();

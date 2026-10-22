@@ -1,17 +1,30 @@
 {
+  "id": "/",
   "name": "Cabas — listes de courses",
   "short_name": "Cabas",
-  "description": "Listes de courses partagées, avec une icône par produit, synchronisées sur ton compte Google.",
+  "description": "Listes de courses partagées, avec une icône par produit, quantités et unités, synchronisées sur ton compte Google.",
   "lang": "fr",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#F6F2E9",
   "theme_color": "#2F6B4A",
+  "categories": ["shopping", "food", "lifestyle", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "screenshots/liste.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Une liste rangée par rayon, une icône par produit" },
+    { "src": "screenshots/recherche.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Cherche ou crée un produit" },
+    { "src": "screenshots/quantite.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Quantité et unité au choix" }
+  ],
+  "shortcuts": [
+    { "name": "Mes listes", "short_name": "Listes", "url": "./", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
   ]
 }
