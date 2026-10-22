@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Matrice d'Eisenhower ----------
+    // Chaque compte Google lit et écrit uniquement ses propres tâches.
+    match /users/{userId}/tasks/{taskId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ---------- Carnet Muscu ----------
+    match /muscu/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ---------- Cabas : listes de courses partagées ----------
+    function signedIn() {
+      return request.auth != null && request.auth.token.email != null;
+    }
+    function myEmail() {
+      return request.auth.token.email.lower();
+    }
+    function isListMember(listId) {
+      return signedIn()
+        && myEmail() in get(/databases/$(database)/documents/cabas_lists/$(listId)).data.memberEmails;
+    }
+
+    match /cabas_lists/{listId} {
+      // Une liste est visible par les comptes Google listés dans memberEmails.
+      allow read: if signedIn() && myEmail() in resource.data.memberEmails;
+
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && myEmail() in request.resource.data.memberEmails;
+
+      allow update: if signedIn() && (
+        // Un membre peut tout modifier (nom, membres, compteur), sauf le propriétaire.
+        (myEmail() in resource.data.memberEmails
+          && request.resource.data.ownerUid == resource.data.ownerUid)
+        ||
+        // Rejoindre via un lien d'invitation : on ne peut ajouter que soi-même.
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberEmails', 'joinCode', 'members'])
+          && request.resource.data.joinCode is string
+          && get(/databases/$(database)/documents/cabas_invites/$(request.resource.data.joinCode)).data.listId == listId
+          && request.resource.data.memberEmails.hasAll(resource.data.memberEmails)
+          && request.resource.data.memberEmails.size() == resource.data.memberEmails.size() + 1
+          && myEmail() in request.resource.data.memberEmails
+          && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid]))
+      );
+
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+
+      // Articles : lisibles et modifiables par tous les membres de la liste.
+      match /items/{itemId} {
+        allow read, write: if isListMember(listId);
+      }
+    }
+
+    // Codes d'invitation (lien de partage).
+    match /cabas_invites/{code} {
+      allow get: if signedIn();
+      allow create: if isListMember(request.resource.data.listId);
+      allow delete: if isListMember(resource.data.listId);
+    }
+
+    // Produits, unités et habitudes personnels de chaque compte.
+    match /cabas_users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

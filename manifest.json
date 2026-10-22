@@ -1,0 +1,17 @@
+{
+  "name": "Cabas — listes de courses",
+  "short_name": "Cabas",
+  "description": "Listes de courses partagées, avec une icône par produit, synchronisées sur ton compte Google.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F2E9",
+  "theme_color": "#2F6B4A",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,1519 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cabas</title>
+<meta name="description" content="Listes de courses partagées, synchronisées sur ton compte Google.">
+<meta name="theme-color" content="#2F6B4A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cabas">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F2E9; --bg2:#EFE9DC; --card:#FFFFFF; --ink:#1D2620; --muted:#6B7266; --line:#E4DCCB;
+  --accent:#2F6B4A; --accent-ink:#FFFFFF; --accent-soft:#E0EDE3; --warn:#C9502A; --warn-soft:#FBE6DD;
+  --chip:#ECE5D6; --shadow:0 1px 2px rgba(29,38,32,.06),0 6px 18px rgba(29,38,32,.07);
+  --r:18px; --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#121612; --bg2:#1A1F1A; --card:#1C221D; --ink:#ECEFE7; --muted:#99A293; --line:#2B332C;
+    --accent:#7FC79C; --accent-ink:#0E1A12; --accent-soft:#213128; --warn:#F08A63; --warn-soft:#3A241B;
+    --chip:#252C26; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121612; --bg2:#1A1F1A; --card:#1C221D; --ink:#ECEFE7; --muted:#99A293; --line:#2B332C;
+  --accent:#7FC79C; --accent-ink:#0E1A12; --accent-soft:#213128; --warn:#F08A63; --warn-soft:#3A241B;
+  --chip:#252C26; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25); color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:15px/1.4 "DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100dvh;overscroll-behavior-y:contain}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0;letter-spacing:-.01em}
+.hidden{display:none!important}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+.screen{min-height:100dvh;padding-bottom:calc(110px + var(--safe-b))}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding-top:var(--safe-t)}
+.top .wrap{display:flex;align-items:center;gap:10px;min-height:60px}
+.top h1{font-size:26px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top h1 .em{margin-right:6px}
+.icon-btn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;flex:none}
+.icon-btn:hover{background:var(--bg2)}
+.icon-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sync{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.sync.off{background:var(--warn)} .sync.local{background:var(--muted)}
+.avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;overflow:hidden;flex:none;border:2px solid var(--bg)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avs{display:flex}.avs .avatar{width:28px;height:28px;font-size:12px;margin-left:-8px}.avs .avatar:first-child{margin-left:0}
+
+/* ---------- login ---------- */
+#scrLogin{display:grid;place-items:center;padding:24px}
+.login{max-width:380px;text-align:center}
+.login .logo{font-size:64px;line-height:1;margin-bottom:10px}
+.login h1{font-size:44px;margin-bottom:6px}
+.login p{color:var(--muted);margin:0 0 26px}
+.login .btn{width:100%;margin-bottom:10px}
+.banner{background:var(--accent-soft);color:var(--ink);border-radius:14px;padding:12px 14px;margin-bottom:18px;font-size:14px;text-align:left}
+.fine{font-size:12px;color:var(--muted);margin-top:14px}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:50px;padding:0 20px;border-radius:14px;font-weight:600;background:var(--chip)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.danger{background:var(--warn-soft);color:var(--warn)}
+.btn.ghost{background:transparent;border:1.5px solid var(--line)}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.gicon{width:20px;height:20px;background:#fff;border-radius:50%;display:grid;place-items:center}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + var(--safe-b));z-index:30;box-shadow:0 8px 24px rgba(47,107,74,.35);height:54px;padding:0 24px;font-size:16px}
+.fab:active{transform:translateX(-50%) scale(.98)}
+
+/* ---------- home ---------- */
+.lists{display:grid;gap:12px;padding-top:6px}
+.lcard{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);text-align:left;width:100%}
+.lcard .em{font-size:34px;width:52px;height:52px;border-radius:14px;background:var(--bg2);display:grid;place-items:center;flex:none}
+.lcard .info{flex:1;min-width:0}
+.lcard h3{font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lcard .meta{color:var(--muted);font-size:13px;margin-top:2px}
+.lcard .count{font-weight:700;color:var(--accent)}
+.empty{text-align:center;color:var(--muted);padding:48px 20px}
+.empty .big{font-size:56px;margin-bottom:8px}
+.empty h3{color:var(--ink);font-size:20px;margin-bottom:6px}
+
+/* ---------- list screen ---------- */
+.searchbar{position:sticky;top:calc(60px + var(--safe-t));z-index:15;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:4px 0 10px}
+.sfield{display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:0 6px 0 14px;height:50px;box-shadow:var(--shadow)}
+.sfield:focus-within{border-color:var(--accent)}
+.sfield svg{width:20px;height:20px;stroke:var(--muted);fill:none;stroke-width:2.2;stroke-linecap:round;flex:none}
+.sfield input{flex:1;min-width:0;border:0;outline:0;background:none;height:100%;font-size:16px}
+.sfield .done{font-weight:600;color:var(--accent);padding:8px 10px;border-radius:10px}
+.toolbar{display:flex;align-items:center;gap:8px;margin:2px 0 8px;color:var(--muted);font-size:13px}
+.toolbar .sp{flex:1}
+.seg{display:inline-flex;background:var(--chip);border-radius:10px;padding:3px}
+.seg button{padding:5px 10px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.group{margin:14px 0 4px}
+.ghead{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 2px 8px}
+.ghead .n{background:var(--chip);border-radius:20px;padding:1px 8px;font-size:12px;letter-spacing:0}
+.ghead .sp{flex:1}
+.ghead button{text-transform:none;letter-spacing:0;font-weight:600;color:var(--accent);font-size:13px;padding:4px 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}
+.tile{position:relative;background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:112px;text-align:center;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .12s,opacity .2s;touch-action:manipulation}
+.tile:active{transform:scale(.96)}
+.tile .ic{font-size:38px;line-height:1.1;margin-top:2px}
+.tile .nm{font-size:13px;font-weight:600;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.tile .q{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:20px;padding:1px 8px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.tile .note{font-size:11px;color:var(--muted);font-style:italic;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.tile .by{position:absolute;top:6px;left:6px}
+.tile .by .avatar{width:18px;height:18px;font-size:9px;border:0}
+.tile.checked{background:transparent;box-shadow:none;border:1.5px dashed var(--line);opacity:.62}
+.tile.checked .ic{filter:grayscale(1)}
+.tile.checked .nm{text-decoration:line-through}
+.tile.checked .q{background:var(--chip);color:var(--muted)}
+.tile.pop{animation:pop .28s ease}
+@keyframes pop{50%{transform:scale(1.07)}}
+.hint{font-size:12px;color:var(--muted);text-align:center;margin:18px 0 0}
+
+/* search results */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:36px;padding:0 13px;border-radius:12px;background:var(--chip);font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.chip.on{background:var(--accent);color:var(--accent-ink)}
+.chip.add{background:transparent;border:1.5px dashed var(--line);color:var(--muted)}
+.wrapchips{flex-wrap:wrap;overflow:visible}
+.ptile.inlist{outline:2px solid var(--accent);outline-offset:-2px}
+.ptile .q{position:absolute;top:6px;right:6px}
+.ptile.create{background:var(--accent-soft);box-shadow:none;border:1.5px dashed var(--accent)}
+.ptile.create .ic{font-size:30px;color:var(--accent);font-weight:700;font-family:"DM Sans"}
+.ptile.create .nm{color:var(--accent)}
+.sectitle{font-size:13px;color:var(--muted);font-weight:600;margin:6px 2px 8px}
+
+/* ---------- sheet ---------- */
+#scrim{position:fixed;inset:0;background:rgba(10,14,11,.42);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+#scrim.on{opacity:1;pointer-events:auto}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--card);border-radius:24px 24px 0 0;max-height:92dvh;overflow-y:auto;transform:translateY(105%);transition:transform .26s cubic-bezier(.2,.8,.2,1);padding:8px 18px calc(18px + var(--safe-b));max-width:760px;margin:0 auto;box-shadow:0 -10px 40px rgba(0,0,0,.18)}
+#sheet.on{transform:none}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 12px}
+.shead{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.shead h3{font-size:22px;flex:1;min-width:0}
+.bigico{width:64px;height:64px;font-size:40px;border-radius:18px;background:var(--bg2);display:grid;place-items:center;flex:none;position:relative}
+.bigico .pen{position:absolute;right:-4px;bottom:-4px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:12px;display:grid;place-items:center;border:2px solid var(--card)}
+.shead .tt{flex:1;min-width:0}
+.shead .sub{font-size:13px;color:var(--muted)}
+.lbl{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px}
+.inp{width:100%;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);padding:0 14px;font-size:16px;outline:0}
+.inp:focus{border-color:var(--accent)}
+.inp.title{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:20px;height:46px;background:transparent;border-color:transparent;padding:0 6px;margin-left:-6px}
+.inp.title:focus{border-color:var(--line);background:var(--bg)}
+.qty{display:flex;align-items:center;gap:10px}
+.qty button{width:52px;height:52px;border-radius:14px;background:var(--chip);font-size:24px;font-weight:600;flex:none}
+.qty input{flex:1;min-width:0;text-align:center;font-size:22px;font-weight:700;height:52px}
+.quick{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.quick button{height:32px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);font-size:13px;font-weight:600;color:var(--muted)}
+.row{display:flex;gap:8px;align-items:center}
+.row .inp{flex:1}
+.sacts{display:flex;gap:10px;margin-top:22px}
+.sacts .btn{flex:1}
+.icogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:4px;max-height:220px;overflow-y:auto;background:var(--bg);border-radius:14px;padding:8px;margin-top:4px}
+.icogrid button{font-size:26px;height:44px;border-radius:10px}
+.icogrid button:hover,.icogrid button.on{background:var(--accent-soft)}
+.mrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:0}
+.mrow .avatar{width:38px;height:38px;border:0}
+.mrow .info{flex:1;min-width:0}
+.mrow .info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow .info span{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.mrow .em{font-size:26px;width:38px;text-align:center}
+.tag{font-size:11px;font-weight:700;background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:20px}
+.small-x{color:var(--warn);font-weight:600;font-size:13px;padding:6px 8px;border-radius:8px}
+.menu{display:grid;gap:4px;margin-top:6px}
+.menu button{display:flex;align-items:center;gap:12px;height:52px;padding:0 12px;border-radius:12px;font-weight:600;text-align:left;width:100%}
+.menu button:hover{background:var(--bg2)}
+.menu button .mi{font-size:20px;width:26px;text-align:center}
+.menu button.red{color:var(--warn)}
+.note-box{font-size:13px;color:var(--muted);background:var(--bg);border-radius:12px;padding:10px 12px;margin-top:10px}
+
+/* ---------- toast ---------- */
+#toast{position:fixed;left:50%;bottom:calc(88px + var(--safe-b));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:14px;font-weight:500;z-index:60;opacity:0;pointer-events:none;transition:.22s;max-width:calc(100% - 32px);display:flex;gap:14px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+#toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#toast button{color:var(--accent-soft);font-weight:700}
+@media (min-width:600px){.grid{grid-template-columns:repeat(auto-fill,minmax(112px,1fr))}}
+</style>
+</head>
+<body>
+
+<!-- ========== Connexion ========== -->
+<section id="scrLogin" class="screen hidden">
+  <div class="login">
+    <div class="logo">🧺</div>
+    <h1>Cabas</h1>
+    <p>Tes listes de courses, avec une icône par produit, synchronisées sur ton compte Google et partagées avec qui tu veux.</p>
+    <div id="inviteBanner" class="banner hidden">📨 Tu as été invité·e sur une liste. Connecte-toi avec ton compte Google pour la rejoindre.</div>
+    <button class="btn primary" id="btnGoogle"><span class="gicon"><svg width="14" height="14" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg></span>Se connecter avec Google</button>
+    <button class="btn ghost" id="btnLocal">Essayer sans compte</button>
+    <div class="fine" id="loginFine">Sans compte, les listes restent sur cet appareil et ne peuvent pas être partagées.</div>
+  </div>
+</section>
+
+<!-- ========== Mes listes ========== -->
+<section id="scrHome" class="screen hidden">
+  <header class="top"><div class="wrap">
+    <h1><span class="em">🧺</span>Mes listes</h1>
+    <span class="sync" id="syncDot" title=""></span>
+    <button class="icon-btn" id="btnAccount" aria-label="Compte"></button>
+  </div></header>
+  <main class="wrap">
+    <div class="lists" id="lists"></div>
+  </main>
+  <button class="btn primary fab" id="btnNewList">＋ Nouvelle liste</button>
+</section>
+
+<!-- ========== Une liste ========== -->
+<section id="scrList" class="screen hidden">
+  <header class="top"><div class="wrap">
+    <button class="icon-btn" id="btnBack" aria-label="Retour"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <h1 id="listTitle"></h1>
+    <button class="avs" id="btnShare" aria-label="Partager"></button>
+    <button class="icon-btn" id="btnListMenu" aria-label="Options"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg></button>
+  </div></header>
+  <main class="wrap">
+    <div class="searchbar">
+      <label class="sfield">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Ajouter un produit…" autocomplete="off" enterkeyhint="go">
+        <button class="done hidden" id="btnDone">Terminé</button>
+      </label>
+    </div>
+    <div id="listView"></div>
+    <div id="searchView" class="hidden"></div>
+  </main>
+</section>
+
+<div id="scrim"></div>
+<div id="sheet" role="dialog" aria-modal="true"></div>
+<div id="toast"><span id="toastMsg"></span><button id="toastAct" class="hidden"></button></div>
+
+<script type="module">
+/* ============================================================
+   Cabas — listes de courses partagées
+   Firebase : projet matrice-d-eisenhower-aa8df (même que Matrice & Carnet Muscu)
+   ============================================================ */
+const FIREBASE = {
+  apiKey: "AIzaSyDF6hKnOqaFM2CE06k-83Rgrahm8MKx0Zk",
+  authDomain: "matrice-d-eisenhower-aa8df.firebaseapp.com",
+  projectId: "matrice-d-eisenhower-aa8df",
+  storageBucket: "matrice-d-eisenhower-aa8df.firebasestorage.app",
+  messagingSenderId: "7353078163",
+  appId: "1:7353078163:web:8b0fdac8cdffe4ce6d1866"
+};
+const SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
+
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const norm = s => String(s || "").toLowerCase().replace(/œ/g, "oe").replace(/æ/g, "ae").normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+const keyOf = s => norm(s).replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter(Boolean)
+  .map(w => (w.length > 3 && /[sx]$/.test(w) ? w.slice(0, -1) : w)).join("_") || "x";
+const rid = (n = 12) => { const a = "abcdefghijkmnpqrstuvwxyz23456789"; let s = ""; const r = crypto.getRandomValues(new Uint8Array(n)); for (const b of r) s += a[b % a.length]; return s; };
+const ms = t => (t && t.toMillis ? t.toMillis() : (typeof t === "number" ? t : Date.now()));
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+const fmtNum = n => (Math.round(n * 100) / 100).toLocaleString("fr-FR");
+const COLORS = ["#2F6B4A", "#C9502A", "#3D6FB6", "#8A4FB0", "#B7832F", "#2B8A8A", "#B04F75", "#5E6E2E"];
+const colorOf = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return COLORS[h % COLORS.length]; };
+function avatar(m) {
+  const n = (m && (m.name || m.email)) || "?";
+  if (m && m.photo) return `<span class="avatar" style="background:${colorOf(n)}"><img src="${esc(m.photo)}" alt="" referrerpolicy="no-referrer"></span>`;
+  return `<span class="avatar" style="background:${colorOf(n)}">${esc(n.trim()[0].toUpperCase())}</span>`;
+}
+
+/* ---------- rayons ---------- */
+const CATS = [
+  ["fl", "Fruits & légumes", "🥕"], ["bo", "Boulangerie", "🥖"], ["cr", "Crèmerie & œufs", "🧀"],
+  ["vp", "Viandes & poissons", "🥩"], ["es", "Épicerie salée", "🥫"], ["su", "Épicerie sucrée", "🍫"],
+  ["bs", "Boissons", "🧃"], ["sg", "Surgelés", "🧊"], ["hy", "Hygiène & beauté", "🧴"],
+  ["en", "Entretien & maison", "🧽"], ["bb", "Bébé", "🍼"], ["an", "Animaux", "🐾"], ["au", "Divers", "🛒"]
+];
+const CAT = Object.fromEntries(CATS.map(([id, label, icon], i) => [id, { id, label, icon, i }]));
+
+/* ---------- unités ---------- */
+const UNITS = [
+  { id: "pc", label: "pièce", pl: "pièces", step: 1, q: 1, main: 1 },
+  { id: "g", label: "g", step: 50, q: 250, abbr: 1, main: 1 },
+  { id: "kg", label: "kg", step: 0.5, q: 1, abbr: 1, main: 1 },
+  { id: "l", label: "L", step: 0.5, q: 1, abbr: 1, main: 1 },
+  { id: "cl", label: "cl", step: 10, q: 75, abbr: 1 },
+  { id: "ml", label: "ml", step: 50, q: 500, abbr: 1 },
+  { id: "paquet", label: "paquet", pl: "paquets", main: 1 },
+  { id: "boite", label: "boîte", pl: "boîtes", main: 1 },
+  { id: "bouteille", label: "bouteille", pl: "bouteilles", main: 1 },
+  { id: "pot", label: "pot", pl: "pots" },
+  { id: "sachet", label: "sachet", pl: "sachets" },
+  { id: "barquette", label: "barquette", pl: "barquettes" },
+  { id: "botte", label: "botte", pl: "bottes" },
+  { id: "tranche", label: "tranche", pl: "tranches" },
+  { id: "rouleau", label: "rouleau", pl: "rouleaux" },
+  { id: "pack", label: "pack", pl: "packs" },
+  { id: "brique", label: "brique", pl: "briques" },
+  { id: "canette", label: "canette", pl: "canettes" },
+  { id: "filet", label: "filet", pl: "filets" },
+  { id: "bocal", label: "bocal", pl: "bocaux" },
+  { id: "tablette", label: "tablette", pl: "tablettes" },
+  { id: "douzaine", label: "douzaine", pl: "douzaines" },
+  { id: "sac", label: "sac", pl: "sacs" }
+];
+const UNIT = Object.fromEntries(UNITS.map(u => [u.id, u]));
+function allUnits() {
+  const custom = Object.entries(S.cat.units || {}).map(([id, u]) => ({ id, label: u.label, custom: 1 }));
+  return UNITS.concat(custom.sort((a, b) => a.label.localeCompare(b.label, "fr")));
+}
+function unitOf(id, fallbackLabel) {
+  return UNIT[id] || (S.cat.units && S.cat.units[id] && { id, label: S.cat.units[id].label, custom: 1 }) || { id, label: fallbackLabel || id, custom: 1 };
+}
+function fmtQty(qty, unitId, unitLabel) {
+  if (!qty || qty <= 0) return "";
+  const u = unitOf(unitId, unitLabel);
+  if (u.id === "pc") return "×" + fmtNum(qty);
+  if (u.abbr) return fmtNum(qty) + " " + u.label;
+  return fmtNum(qty) + " " + (qty > 1 && u.pl ? u.pl : u.label);
+}
+
+/* ---------- catalogue : nom | icône | rayon | unité | mots-clés ---------- */
+const RAW = `
+Pommes|🍎|fl|pc|fruit
+Poires|🍐|fl|pc|fruit
+Bananes|🍌|fl|pc|fruit
+Oranges|🍊|fl|pc|fruit agrume
+Clémentines|🍊|fl|kg|fruit agrume mandarine
+Citrons|🍋|fl|pc|agrume
+Citrons verts|🍋|fl|pc|agrume lime
+Pamplemousse|🍊|fl|pc|agrume
+Raisin|🍇|fl|g|fruit
+Fraises|🍓|fl|barquette|fruit
+Framboises|🍓|fl|barquette|fruit
+Myrtilles|🫐|fl|barquette|fruit
+Cerises|🍒|fl|g|fruit
+Pêches|🍑|fl|pc|fruit
+Abricots|🍑|fl|g|fruit
+Kiwis|🥝|fl|pc|fruit
+Ananas|🍍|fl|pc|fruit
+Mangue|🥭|fl|pc|fruit
+Melon|🍈|fl|pc|fruit
+Pastèque|🍉|fl|pc|fruit
+Noix de coco|🥥|fl|pc|fruit
+Avocats|🥑|fl|pc|
+Tomates|🍅|fl|g|legume
+Tomates cerises|🍅|fl|barquette|legume
+Concombre|🥒|fl|pc|legume
+Courgettes|🥒|fl|pc|legume
+Aubergine|🍆|fl|pc|legume
+Poivrons|🫑|fl|pc|legume
+Piments|🌶️|fl|pc|
+Carottes|🥕|fl|kg|legume
+Pommes de terre|🥔|fl|kg|legume patate
+Patates douces|🍠|fl|pc|legume
+Oignons|🧅|fl|pc|legume
+Oignons rouges|🧅|fl|pc|legume
+Échalotes|🧅|fl|pc|legume
+Ail|🧄|fl|pc|
+Gingembre|🫚|fl|g|
+Salade|🥬|fl|pc|legume laitue
+Roquette|🥬|fl|sachet|salade
+Mâche|🥬|fl|sachet|salade
+Épinards|🥬|fl|g|legume
+Chou|🥬|fl|pc|legume
+Poireaux|🥬|fl|pc|legume
+Céleri|🥬|fl|pc|legume
+Brocoli|🥦|fl|pc|legume
+Chou-fleur|🥦|fl|pc|legume
+Champignons|🍄|fl|barquette|legume
+Maïs|🌽|fl|pc|
+Haricots verts|🫛|fl|g|legume
+Petits pois|🫛|fl|g|legume
+Potiron|🎃|fl|pc|legume courge citrouille butternut
+Radis|🌱|fl|botte|legume
+Betteraves|🍠|fl|pc|legume
+Asperges|🌱|fl|botte|legume
+Fenouil|🌿|fl|pc|legume
+Persil|🌿|fl|botte|herbe aromate
+Coriandre|🌿|fl|botte|herbe aromate
+Basilic|🌿|fl|pot|herbe aromate
+Menthe|🌿|fl|botte|herbe aromate
+Ciboulette|🌿|fl|botte|herbe aromate
+Baguette|🥖|bo|pc|pain
+Pain de campagne|🍞|bo|pc|
+Pain de mie|🍞|bo|paquet|
+Pain complet|🍞|bo|pc|
+Croissants|🥐|bo|pc|viennoiserie
+Pains au chocolat|🥐|bo|pc|viennoiserie chocolatine
+Brioche|🍞|bo|pc|viennoiserie
+Biscottes|🍞|bo|paquet|
+Tortillas|🫓|bo|paquet|wrap
+Pain pita|🫓|bo|paquet|
+Bagels|🥯|bo|paquet|
+Crêpes|🥞|bo|paquet|
+Gâteau|🍰|bo|pc|dessert
+Lait|🥛|cr|l|
+Lait d'avoine|🥛|cr|l|vegetal
+Lait d'amande|🥛|cr|l|vegetal
+Beurre|🧈|cr|pc|
+Œufs|🥚|cr|pc|oeuf
+Yaourts|🥣|cr|pack|yaourt
+Yaourts aux fruits|🥣|cr|pack|yaourt
+Fromage blanc|🥣|cr|pot|
+Skyr|🥣|cr|pot|yaourt
+Crème fraîche|🥛|cr|pot|creme
+Crème liquide|🥛|cr|brique|creme
+Crème dessert|🍮|cr|pack|dessert
+Emmental râpé|🧀|cr|sachet|fromage
+Comté|🧀|cr|g|fromage
+Camembert|🧀|cr|pc|fromage
+Mozzarella|🧀|cr|pc|fromage
+Feta|🧀|cr|pc|fromage
+Parmesan|🧀|cr|g|fromage
+Chèvre|🧀|cr|pc|fromage
+Raclette|🧀|cr|g|fromage
+Pâte feuilletée|🥧|cr|pc|pate tarte
+Pâte brisée|🥧|cr|pc|pate tarte
+Pâte à pizza|🍕|cr|pc|pate
+Poulet|🍗|vp|g|viande volaille blanc filet
+Cuisses de poulet|🍗|vp|pc|viande volaille
+Escalopes de dinde|🍗|vp|pc|viande volaille
+Steaks hachés|🥩|vp|pc|viande boeuf
+Bœuf|🥩|vp|g|viande
+Viande hachée|🥩|vp|g|viande boeuf
+Porc|🍖|vp|g|viande cote
+Agneau|🍖|vp|g|viande
+Saucisses|🌭|vp|pc|viande
+Merguez|🌭|vp|pc|viande saucisse
+Lardons|🥓|vp|g|viande porc
+Bacon|🥓|vp|tranche|viande
+Jambon|🍖|vp|tranche|viande charcuterie
+Jambon cru|🍖|vp|tranche|viande charcuterie
+Saucisson|🍖|vp|pc|charcuterie
+Chorizo|🍖|vp|pc|charcuterie
+Saumon|🐟|vp|g|poisson
+Saumon fumé|🐟|vp|tranche|poisson
+Cabillaud|🐟|vp|g|poisson
+Crevettes|🦐|vp|g|fruit de mer
+Moules|🦪|vp|kg|fruit de mer
+Surimi|🦀|vp|paquet|poisson
+Tofu|🍢|vp|pc|vegetarien
+Pâtes|🍝|es|paquet|spaghetti penne
+Riz|🍚|es|kg|
+Semoule|🍚|es|paquet|couscous
+Quinoa|🌾|es|paquet|
+Nouilles|🍜|es|paquet|ramen
+Lentilles|🫘|es|g|legumineuse
+Pois chiches|🫘|es|boite|legumineuse
+Haricots rouges|🫘|es|boite|legumineuse
+Farine|🌾|es|kg|
+Huile d'olive|🫒|es|bouteille|
+Huile de tournesol|🌻|es|bouteille|
+Vinaigre|🍶|es|bouteille|
+Sel|🧂|es|paquet|
+Poivre|🧂|es|pot|epice
+Épices|🌶️|es|pot|
+Moutarde|🫙|es|pot|condiment
+Mayonnaise|🫙|es|pot|condiment
+Ketchup|🍅|es|bouteille|condiment
+Sauce tomate|🥫|es|bocal|coulis
+Sauce soja|🍶|es|bouteille|condiment
+Pesto|🌿|es|pot|sauce
+Bouillon|🍲|es|boite|cube
+Soupe|🍲|es|brique|
+Conserves|🥫|es|boite|
+Maïs en boîte|🌽|es|boite|conserve
+Thon|🐟|es|boite|poisson conserve
+Sardines|🐟|es|boite|poisson conserve
+Olives|🫒|es|bocal|apero
+Cornichons|🥒|es|bocal|
+Chips|🥔|es|paquet|apero
+Biscuits apéro|🥨|es|paquet|apero
+Cacahuètes|🥜|es|paquet|apero
+Amandes|🥜|es|sachet|fruit sec
+Noix|🌰|es|sachet|fruit sec
+Céréales|🥣|es|boite|petit dejeuner
+Flocons d'avoine|🥣|es|paquet|petit dejeuner
+Muesli|🥣|es|paquet|petit dejeuner granola
+Sucre|🍬|su|kg|
+Chocolat|🍫|su|tablette|
+Pâte à tartiner|🍫|su|pot|
+Confiture|🫙|su|pot|
+Miel|🍯|su|pot|
+Biscuits|🍪|su|paquet|gateau
+Madeleines|🧁|su|paquet|gateau
+Bonbons|🍬|su|sachet|
+Compote|🍏|su|pack|
+Café|☕|su|paquet|
+Capsules de café|☕|su|boite|cafe
+Thé|🍵|su|boite|infusion
+Cacao|☕|su|boite|chocolat poudre
+Levure|🧁|su|sachet|patisserie
+Sucre vanillé|🍦|su|sachet|patisserie
+Popcorn|🍿|su|paquet|
+Eau|💧|bs|pack|bouteille
+Eau gazeuse|🫧|bs|bouteille|
+Jus d'orange|🧃|bs|l|
+Jus de pomme|🧃|bs|l|
+Soda|🥤|bs|bouteille|
+Limonade|🥤|bs|bouteille|
+Sirop|🧃|bs|bouteille|
+Bière|🍺|bs|pack|alcool
+Vin rouge|🍷|bs|bouteille|alcool
+Vin blanc|🥂|bs|bouteille|alcool
+Rosé|🍷|bs|bouteille|alcool vin
+Champagne|🍾|bs|bouteille|alcool
+Kombucha|🧋|bs|bouteille|
+Glaces|🍨|sg|pc|creme glacee dessert
+Pizza surgelée|🍕|sg|pc|
+Frites|🍟|sg|sachet|
+Légumes surgelés|🥦|sg|sachet|
+Poisson pané|🐟|sg|boite|
+Glaçons|🧊|sg|sachet|
+Papier toilette|🧻|hy|paquet|pq
+Mouchoirs|🤧|hy|paquet|
+Dentifrice|🪥|hy|pc|
+Brosses à dents|🪥|hy|pc|
+Shampoing|🧴|hy|bouteille|
+Après-shampoing|🧴|hy|bouteille|
+Gel douche|🧴|hy|bouteille|
+Savon|🧼|hy|pc|
+Déodorant|🧴|hy|pc|
+Rasoirs|🪒|hy|paquet|
+Mousse à raser|🪒|hy|pc|
+Coton|☁️|hy|paquet|
+Cotons-tiges|🧴|hy|boite|
+Protections hygiéniques|🌸|hy|paquet|serviette tampon
+Crème hydratante|🧴|hy|pc|
+Crème solaire|☀️|hy|pc|
+Pansements|🩹|hy|boite|pharmacie
+Pharmacie|💊|hy|boite|medicament
+Liquide vaisselle|🧽|en|bouteille|
+Éponges|🧽|en|paquet|
+Lessive|🧺|en|pc|linge
+Adoucissant|🧺|en|bouteille|linge
+Pastilles lave-vaisselle|🫧|en|paquet|
+Sacs poubelle|🗑️|en|rouleau|
+Essuie-tout|🧻|en|rouleau|sopalin
+Nettoyant multi-usage|🧴|en|bouteille|menage
+Javel|🧪|en|bouteille|menage
+Papier aluminium|📜|en|rouleau|alu
+Papier cuisson|📜|en|rouleau|
+Film alimentaire|📜|en|rouleau|
+Sacs congélation|🛍️|en|paquet|
+Ampoules|💡|en|pc|
+Piles|🔋|en|paquet|
+Allumettes|🔥|en|boite|
+Bougies|🕯️|en|pc|
+Couches|🧷|bb|paquet|bebe
+Lingettes|🧻|bb|paquet|bebe
+Lait infantile|🍼|bb|boite|bebe
+Petits pots|🍼|bb|pc|bebe
+Croquettes chat|🐈|an|kg|animal
+Croquettes chien|🐕|an|kg|animal
+Pâtée|🐾|an|boite|animal
+Litière|🐾|an|sac|animal chat`;
+const DEFAULT_PRODUCTS = RAW.trim().split("\n").map(l => {
+  const [name, icon, cat, unit, tags] = l.split("|");
+  return { pid: keyOf(name), name, icon, cat, unit, tags: tags || "" };
+});
+
+const ICONS = ("🍎 🍏 🍐 🍊 🍋 🍌 🍉 🍇 🍓 🫐 🍈 🍒 🍑 🥭 🍍 🥥 🥝 🍅 🍆 🥑 🫛 🥦 🥬 🥒 🌶️ 🫑 🌽 🥕 🫒 🧄 🧅 🥔 🍠 🫚 🍄 🌰 🥜 🫘 🌿 🌱 🍞 🥐 🥖 🫓 🥨 🥯 🥞 🧇 🧀 🍖 🍗 🥩 🥓 🍔 🍟 🍕 🌭 🥪 🌮 🌯 🥙 🧆 🥚 🍳 🥘 🍲 🥣 🥗 🍿 🧈 🧂 🥫 🍱 🍘 🍙 🍚 🍛 🍜 🍝 🍢 🍣 🍤 🥟 🦀 🦞 🦐 🦑 🦪 🐟 🍦 🍧 🍨 🍩 🍪 🎂 🍰 🧁 🥧 🍫 🍬 🍭 🍮 🍯 🍼 🥛 ☕ 🫖 🍵 🧃 🥤 🧋 🍶 🍾 🍷 🍸 🍹 🍺 🥂 🧊 💧 🫧 🫙 🧴 🧼 🧽 🧻 🪥 🪒 🧺 🧹 🧪 🧷 💊 🩹 🌸 💡 🔋 🕯️ 🔥 🗑️ 🛍️ 📜 🎁 🎈 🐾 🐈 🐕 🐟 🌻 💐 🪴 🛒 🧺 📦 ✏️ 📰 🧦 👕 🧤 🧸 ⭐").split(" ");
+const LIST_ICONS = ["🛒", "🧺", "🏠", "🥖", "🥕", "🎉", "🍷", "🏖️", "🎄", "🍕", "💊", "🐾", "🍼", "🧽", "🏕️", "🎂"];
+
+/* ============================================================
+   État
+   ============================================================ */
+const S = {
+  store: null, lists: [], cur: null, items: [], itemsMeta: null,
+  cat: { products: {}, units: {}, freq: {}, last: {} },
+  searching: false, q: "", chip: null,
+  sort: lsGet("cabas.sort") || "cat",
+  unsubLists: null, unsubItems: null, unsubCat: null
+};
+let fb = null, auth = null, db = null, installPrompt = null;
+
+/* ============================================================
+   Stockage local (mode sans compte)
+   ============================================================ */
+const LOCAL_KEY = "cabas.local.v1";
+function localStore() {
+  let data;
+  try { data = JSON.parse(lsGet(LOCAL_KEY)) || null; } catch (e) { data = null; }
+  if (!data) data = { lists: {}, cat: { products: {}, units: {}, freq: {}, last: {} } };
+  const subs = { lists: new Set(), items: new Map(), cat: new Set() };
+  const me = { name: "Moi", email: "", photo: "" };
+  const save = () => { lsSet(LOCAL_KEY, JSON.stringify(data)); emit(); };
+  const listArr = () => Object.entries(data.lists).map(([id, l]) => {
+    const items = Object.values(l.items || {});
+    return Object.assign({}, l, { id, items: undefined, openCount: items.filter(i => !i.checked).length });
+  });
+  const itemArr = lid => Object.entries((data.lists[lid] || {}).items || {}).map(([id, it]) => Object.assign({ id }, it));
+  function emit() {
+    queueMicrotask(() => {
+      subs.lists.forEach(cb => cb(listArr()));
+      subs.items.forEach((set, lid) => set.forEach(cb => cb(itemArr(lid), { pending: false, fromCache: false })));
+      subs.cat.forEach(cb => cb(data.cat));
+    });
+  }
+  const L = id => data.lists[id];
+  return {
+    kind: "local", uid: "local", me, email: "",
+    raw: () => data,
+    watchLists(cb) { subs.lists.add(cb); cb(listArr()); return () => subs.lists.delete(cb); },
+    watchItems(lid, cb) { if (!subs.items.has(lid)) subs.items.set(lid, new Set()); subs.items.get(lid).add(cb); cb(itemArr(lid), {}); return () => subs.items.get(lid).delete(cb); },
+    watchCatalog(cb) { subs.cat.add(cb); cb(data.cat); return () => subs.cat.delete(cb); },
+    createList({ name, icon }) { const id = rid(10); data.lists[id] = { name, icon, ownerUid: "local", memberEmails: [], members: { local: me }, createdAt: Date.now(), items: {} }; save(); return id; },
+    updateList(id, patch) { if (L(id)) Object.assign(L(id), patch); save(); },
+    deleteList(id) { delete data.lists[id]; save(); },
+    addItem(lid, item) { if (!L(lid)) return; L(lid).items[rid(10)] = Object.assign({}, item, { createdAt: Date.now() }); save(); },
+    updateItems(lid, ids, patch) { ids.forEach(id => { const it = L(lid) && L(lid).items[id]; if (it) Object.assign(it, patch); }); save(); },
+    deleteItems(lid, ids) { ids.forEach(id => { if (L(lid)) delete L(lid).items[id]; }); save(); },
+    setCount() {}, ensureMe() {},
+    saveProduct(pid, p) { data.cat.products[pid] = p; save(); },
+    deleteProduct(pid) { delete data.cat.products[pid]; save(); },
+    saveUnit(id, u) { data.cat.units[id] = u; save(); },
+    deleteUnit(id) { delete data.cat.units[id]; save(); },
+    bump(pid, unit, qty) { data.cat.freq[pid] = (data.cat.freq[pid] || 0) + 1; data.cat.last[pid] = { u: unit, q: qty }; save(); },
+    clearAll() { lsSet(LOCAL_KEY, null); }
+  };
+}
+
+/* ============================================================
+   Stockage Firebase (compte Google)
+   ============================================================ */
+function remoteStore(user) {
+  const F = fb.fs;
+  const uid = user.uid;
+  const email = (user.email || "").toLowerCase();
+  const me = { name: user.displayName || email.split("@")[0], email, photo: user.photoURL || "" };
+  const listsCol = F.collection(db, "cabas_lists");
+  const listRef = id => F.doc(db, "cabas_lists", id);
+  const itemsCol = lid => F.collection(db, "cabas_lists", lid, "items");
+  const catRef = F.doc(db, "cabas_users", uid, "meta", "catalog");
+  const run = p => p.catch(onWriteError);
+  const now = () => F.serverTimestamp();
+  return {
+    kind: "remote", uid, email, me,
+    watchLists(cb, err) {
+      return F.onSnapshot(F.query(listsCol, F.where("memberEmails", "array-contains", email)),
+        s => cb(s.docs.map(d => Object.assign({ id: d.id }, d.data()))), err);
+    },
+    watchItems(lid, cb, err) {
+      return F.onSnapshot(itemsCol(lid), { includeMetadataChanges: true },
+        s => cb(s.docs.map(d => Object.assign({ id: d.id }, d.data())), { pending: s.metadata.hasPendingWrites, fromCache: s.metadata.fromCache }), err);
+    },
+    watchCatalog(cb) {
+      return F.onSnapshot(catRef, s => cb(s.exists() ? s.data() : {}), () => cb({}));
+    },
+    createList({ name, icon }, items) {
+      const ref = F.doc(listsCol);
+      const b = F.writeBatch(db);
+      b.set(ref, { name, icon, ownerUid: uid, ownerEmail: email, memberEmails: [email], members: { [uid]: me },
+        openCount: (items || []).filter(i => !i.checked).length, createdAt: now(), updatedAt: now() });
+      (items || []).forEach(it => b.set(F.doc(itemsCol(ref.id)), Object.assign({}, it, { createdAt: now() })));
+      run(b.commit());
+      return ref.id;
+    },
+    updateList(id, patch) { run(F.updateDoc(listRef(id), Object.assign({}, patch, { updatedAt: now() }))); },
+    deleteList(id, itemIds, joinCode) {
+      const ops = itemIds.map(i => ["d", F.doc(itemsCol(id), i)]);
+      if (joinCode) ops.push(["d", F.doc(db, "cabas_invites", joinCode)]);
+      const chunks = [];
+      for (let i = 0; i < ops.length; i += 450) chunks.push(ops.slice(i, i + 450));
+      let p = Promise.resolve();
+      chunks.forEach(ch => { p = p.then(() => { const b = F.writeBatch(db); ch.forEach(([, r]) => b.delete(r)); return b.commit(); }); });
+      run(p.then(() => F.deleteDoc(listRef(id))));
+    },
+    addItem(lid, item) {
+      const b = F.writeBatch(db);
+      b.set(F.doc(itemsCol(lid)), Object.assign({}, item, { createdAt: now() }));
+      b.update(listRef(lid), { openCount: F.increment(item.checked ? 0 : 1), updatedAt: now() });
+      run(b.commit());
+    },
+    updateItems(lid, ids, patch, delta) {
+      const b = F.writeBatch(db);
+      ids.forEach(id => b.update(F.doc(itemsCol(lid), id), patch));
+      b.update(listRef(lid), delta ? { openCount: F.increment(delta), updatedAt: now() } : { updatedAt: now() });
+      run(b.commit());
+    },
+    deleteItems(lid, ids, delta) {
+      const b = F.writeBatch(db);
+      ids.forEach(id => b.delete(F.doc(itemsCol(lid), id)));
+      b.update(listRef(lid), delta ? { openCount: F.increment(delta), updatedAt: now() } : { updatedAt: now() });
+      run(b.commit());
+    },
+    setCount(lid, n) { F.updateDoc(listRef(lid), { openCount: n }).catch(() => {}); },
+    ensureMe(list) {
+      const m = list.members && list.members[uid];
+      if (!m || m.name !== me.name || m.photo !== me.photo) F.updateDoc(listRef(list.id), { ["members." + uid]: me }).catch(() => {});
+    },
+    invite(lid, mail) { run(F.updateDoc(listRef(lid), { memberEmails: F.arrayUnion(mail), updatedAt: now() })); },
+    removeMember(lid, mail, muid) {
+      const patch = { memberEmails: F.arrayRemove(mail), updatedAt: now() };
+      if (muid) patch["members." + muid] = F.deleteField();
+      return F.updateDoc(listRef(lid), patch).catch(onWriteError);
+    },
+    shareLink(list) {
+      let code = list.joinCode;
+      if (!code) {
+        code = rid(14);
+        const b = F.writeBatch(db);
+        b.set(F.doc(db, "cabas_invites", code), { listId: list.id, by: uid, createdAt: now() });
+        b.update(listRef(list.id), { joinCode: code });
+        run(b.commit());
+      }
+      return location.origin + location.pathname + "?join=" + code;
+    },
+    async join(code) {
+      const s = await F.getDoc(F.doc(db, "cabas_invites", code));
+      if (!s.exists()) throw new Error("invalid");
+      const lid = s.data().listId;
+      await F.updateDoc(listRef(lid), { memberEmails: F.arrayUnion(email), joinCode: code, ["members." + uid]: me });
+      return lid;
+    },
+    saveProduct(pid, p) { run(F.setDoc(catRef, { products: { [pid]: p } }, { merge: true })); },
+    deleteProduct(pid) { run(F.updateDoc(catRef, { ["products." + pid]: F.deleteField() })); },
+    saveUnit(id, u) { run(F.setDoc(catRef, { units: { [id]: u } }, { merge: true })); },
+    deleteUnit(id) { run(F.updateDoc(catRef, { ["units." + id]: F.deleteField() })); },
+    bump(pid, unit, qty) { F.setDoc(catRef, { freq: { [pid]: F.increment(1) }, last: { [pid]: { u: unit, q: qty } } }, { merge: true }).catch(() => {}); }
+  };
+}
+function onWriteError(e) {
+  console.error(e);
+  if (e && e.code === "permission-denied") toast("Accès refusé par Firebase — les règles Firestore sont-elles publiées ?");
+  else toast("Erreur de synchro" + (e && e.code ? " (" + e.code + ")" : ""));
+}
+
+/* ============================================================
+   Démarrage
+   ============================================================ */
+const inViewer = !!(window.claude && typeof window.claude.use === "function");
+const canFirebase = /^https?:$/.test(location.protocol) && !inViewer;
+const params = new URLSearchParams(location.search);
+if (params.get("join")) { try { sessionStorage.setItem("cabas.join", params.get("join")); } catch (e) {} history.replaceState(null, "", location.pathname); }
+const pendingJoin = () => { try { return sessionStorage.getItem("cabas.join"); } catch (e) { return null; } };
+
+function show(id) {
+  ["scrLogin", "scrHome", "scrList"].forEach(s => $("#" + s).classList.toggle("hidden", s !== id));
+  window.scrollTo(0, 0);
+}
+
+async function boot() {
+  $("#inviteBanner").classList.toggle("hidden", !pendingJoin());
+  if (!canFirebase) {
+    $("#btnGoogle").classList.add("hidden");
+    $("#loginFine").textContent = "Aperçu : la connexion Google fonctionne une fois l'app en ligne (Netlify). Ici, les listes restent dans ce navigateur.";
+  }
+  history.replaceState(null, "", location.pathname);
+  if (lsGet("cabas.mode") === "local") startLocal();
+  else show("scrLogin");
+  if (canFirebase) {
+    try { await initFirebase(); } catch (e) { console.error(e); toast("Impossible de charger Firebase (hors ligne ?)"); }
+  }
+}
+
+async function initFirebase() {
+  const [app, au, fs] = await Promise.all([import(SDK + "firebase-app.js"), import(SDK + "firebase-auth.js"), import(SDK + "firebase-firestore.js")]);
+  fb = { app, au, fs };
+  const a = app.initializeApp(FIREBASE, "cabas");
+  auth = au.getAuth(a);
+  try { db = fs.initializeFirestore(a, { localCache: fs.persistentLocalCache({ tabManager: fs.persistentMultipleTabManager() }) }); }
+  catch (e) { db = fs.getFirestore(a); }
+  au.getRedirectResult(auth).catch(signInError);
+  au.onAuthStateChanged(auth, user => {
+    if (user) startRemote(user);
+    else if (S.store && S.store.kind === "remote") { stopAll(); S.store = null; show("scrLogin"); }
+  });
+}
+async function signIn() {
+  if (!fb) { toast("Firebase pas encore chargé…"); return; }
+  const prov = new fb.au.GoogleAuthProvider();
+  prov.setCustomParameters({ prompt: "select_account" });
+  try { await fb.au.signInWithPopup(auth, prov); }
+  catch (e) {
+    if (e && (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment" || e.code === "auth/cancelled-popup-request")) {
+      try { await fb.au.signInWithRedirect(auth, prov); } catch (e2) { signInError(e2); }
+    } else signInError(e);
+  }
+}
+function signInError(e) {
+  if (!e || e.code === "auth/popup-closed-by-user") return;
+  if (e.code === "auth/unauthorized-domain") toast("Domaine non autorisé : ajoute-le dans Firebase › Authentication › Domaines autorisés.");
+  else toast("Connexion impossible" + (e.code ? " (" + e.code + ")" : ""));
+}
+
+function stopAll() {
+  [S.unsubLists, S.unsubItems, S.unsubCat].forEach(u => { try { u && u(); } catch (e) {} });
+  S.unsubLists = S.unsubItems = S.unsubCat = null;
+  S.lists = []; S.items = []; S.cur = null;
+}
+function attachStore(store) {
+  stopAll();
+  S.store = store;
+  S.unsubCat = store.watchCatalog(c => { S.cat = Object.assign({ products: {}, units: {}, freq: {}, last: {} }, c); if (S.searching) renderSearch(); });
+  let first = true;
+  S.unsubLists = store.watchLists(lists => {
+    S.lists = lists.sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
+    lists.forEach(l => store.ensureMe(l));
+    renderHome();
+    if (S.pendingOpen && !S.cur && S.lists.some(l => l.id === S.pendingOpen)) openList(S.pendingOpen);
+    if (S.cur) {
+      const l = S.lists.find(x => x.id === S.cur);
+      if (!l) { toast("Tu n'as plus accès à cette liste."); closeList(); }
+      else renderListHeader();
+    }
+    if (first) { first = false; afterFirstLists(); }
+  }, e => { console.error(e); if (e.code === "permission-denied") toast("Accès refusé : publie les règles Firestore (voir LISEZMOI)."); });
+  updateSync();
+}
+function startLocal() {
+  lsSet("cabas.mode", "local");
+  attachStore(localStore());
+  show("scrHome");
+  renderHome();
+}
+function startRemote(user) {
+  const local = lsGet("cabas.mode") === "local" ? localStore() : null;
+  lsSet("cabas.mode", "remote");
+  attachStore(remoteStore(user));
+  show("scrHome");
+  renderHome();
+  // Les listes créées sans compte rejoignent le compte Google.
+  if (local) {
+    const data = local.raw();
+    const ls = Object.values(data.lists || {});
+    ls.forEach(l => S.store.createList({ name: l.name, icon: l.icon }, Object.values(l.items || {}).map(it => { const c = Object.assign({}, it); delete c.createdAt; return c; })));
+    Object.entries(data.cat.products || {}).forEach(([pid, p]) => S.store.saveProduct(pid, p));
+    Object.entries(data.cat.units || {}).forEach(([id, u]) => S.store.saveUnit(id, u));
+    local.clearAll();
+    if (ls.length) toast(ls.length > 1 ? ls.length + " listes ajoutées à ton compte" : "Ta liste a été ajoutée à ton compte");
+  }
+}
+async function afterFirstLists() {
+  const code = pendingJoin();
+  if (code && S.store.kind === "remote") {
+    try { sessionStorage.removeItem("cabas.join"); } catch (e) {}
+    try {
+      const lid = await S.store.join(code);
+      toast("Liste rejointe 🎉");
+      setTimeout(() => openList(lid), 400);
+    } catch (e) { console.error(e); toast("Lien d'invitation invalide ou expiré."); }
+    return;
+  }
+}
+
+/* ============================================================
+   Navigation (bouton retour Android)
+   ============================================================ */
+let navQueue = [], sheetOpen = false;
+function pushLayer(name) { history.pushState(Object.assign({}, history.state || {}, { [name]: true }), ""); }
+function popLayer(name, then) {
+  if (history.state && history.state[name]) { navQueue.push(then || null); history.back(); }
+  else if (then) then();
+}
+window.addEventListener("popstate", () => {
+  if (navQueue.length) { const cb = navQueue.shift(); if (cb) cb(); return; }
+  if (sheetOpen) { closeSheet(true); return; }
+  if (S.searching) { closeSearch(true); return; }
+  const st = history.state;
+  if (st && st.list && S.lists.some(l => l.id === st.list)) openList(st.list, true);
+  else if (S.cur) closeList(true);
+});
+
+/* ============================================================
+   Accueil
+   ============================================================ */
+function updateSync() {
+  const d = $("#syncDot");
+  if (!S.store) return;
+  if (S.store.kind === "local") { d.className = "sync local"; d.title = "Mode local (cet appareil)"; }
+  else if (!navigator.onLine) { d.className = "sync off"; d.title = "Hors ligne — les modifications partiront au retour du réseau"; }
+  else { d.className = "sync"; d.title = "Synchronisé"; }
+  const me = S.store.me;
+  $("#btnAccount").innerHTML = S.store.kind === "local" ? '<span style="font-size:22px">👤</span>' : avatar(me);
+}
+addEventListener("online", updateSync); addEventListener("offline", updateSync);
+
+function renderHome() {
+  const box = $("#lists");
+  if (!S.lists.length) {
+    box.innerHTML = `<div class="empty"><div class="big">📝</div><h3>Aucune liste pour l'instant</h3>Crée ta première liste de courses — tu pourras ensuite la partager.</div>`;
+    return;
+  }
+  box.innerHTML = S.lists.map(l => {
+    const mem = Object.values(l.members || {});
+    const n = l.openCount || 0;
+    const shared = (l.memberEmails || []).length > 1;
+    return `<button class="lcard" data-id="${esc(l.id)}">
+      <span class="em">${esc(l.icon || "🛒")}</span>
+      <span class="info"><h3>${esc(l.name)}</h3>
+        <div class="meta">${n ? `<span class="count">${n} article${n > 1 ? "s" : ""}</span> à acheter` : "Tout est pris ✓"}${shared ? " · partagée" : ""}</div></span>
+      ${shared ? `<span class="avs">${mem.slice(0, 3).map(avatar).join("")}</span>` : ""}
+    </button>`;
+  }).join("");
+}
+$("#lists").addEventListener("click", e => { const c = e.target.closest(".lcard"); if (c) openList(c.dataset.id); });
+$("#btnNewList").addEventListener("click", () => listSheet());
+$("#btnGoogle").addEventListener("click", signIn);
+$("#btnLocal").addEventListener("click", startLocal);
+$("#btnAccount").addEventListener("click", accountSheet);
+
+/* ============================================================
+   Écran liste
+   ============================================================ */
+const curList = () => S.lists.find(l => l.id === S.cur);
+function openList(id, fromPop) {
+  const l = S.lists.find(x => x.id === id);
+  if (!l) { S.pendingOpen = id; return; }
+  S.pendingOpen = null;
+  if (S.unsubItems) S.unsubItems();
+  S.cur = id; S.items = [];
+  lsSet("cabas.lastList", id);
+  if (!fromPop) history.pushState({ list: id }, "");
+  show("scrList");
+  renderListHeader();
+  $("#listView").innerHTML = "";
+  S.unsubItems = S.store.watchItems(id, (items, meta) => {
+    if (S.cur !== id) return;
+    S.items = items;
+    S.itemsMeta = meta;
+    const open = items.filter(i => !i.checked).length;
+    const l2 = curList();
+    if (l2 && meta && !meta.pending && !meta.fromCache && l2.openCount !== open) S.store.setCount(id, open);
+    renderItems();
+    if (S.searching) renderSearch();
+  }, e => { console.error(e); });
+}
+function closeList(fromPop) {
+  if (S.unsubItems) S.unsubItems();
+  S.unsubItems = null; S.cur = null; S.items = [];
+  if (sheetOpen) closeSheet(true);
+  if (S.searching) closeSearch(true);
+  if (!fromPop) {
+    const st = history.state || {};
+    const n = (st.list ? 1 : 0) + (st.search ? 1 : 0) + (st.sheet ? 1 : 0);
+    if (n) { navQueue.push(null); history.go(-n); }
+  }
+  show("scrHome");
+  renderHome();
+}
+function renderListHeader() {
+  const l = curList(); if (!l) return;
+  $("#listTitle").innerHTML = `<span class="em">${esc(l.icon || "🛒")}</span>${esc(l.name)}`;
+  const mem = Object.values(l.members || {});
+  const btn = $("#btnShare");
+  if (S.store.kind === "local") { btn.innerHTML = ""; btn.classList.add("hidden"); return; }
+  btn.classList.remove("hidden");
+  btn.innerHTML = (l.memberEmails || []).length > 1 ? mem.slice(0, 3).map(avatar).join("")
+    : `<span class="icon-btn" style="color:var(--accent)"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M19 8v6M16 11h6"/></svg></span>`;
+}
+$("#btnBack").addEventListener("click", () => closeList());
+$("#btnShare").addEventListener("click", shareSheet);
+$("#btnListMenu").addEventListener("click", listMenuSheet);
+
+function memberOf(uid) { const l = curList(); return l && l.members && l.members[uid]; }
+function tileHTML(it) {
+  const q = fmtQty(it.qty, it.unit, it.unitLabel);
+  const shared = curList() && (curList().memberEmails || []).length > 1;
+  const by = shared && it.addedByUid && it.addedByUid !== S.store.uid ? memberOf(it.addedByUid) : null;
+  return `<button class="tile${it.checked ? " checked" : ""}" data-id="${esc(it.id)}">
+    ${by ? `<span class="by" title="Ajouté par ${esc(by.name)}">${avatar(by)}</span>` : ""}
+    <span class="ic">${esc(it.icon || "🛒")}</span>
+    <span class="nm">${esc(it.name)}</span>
+    ${q ? `<span class="q">${esc(q)}</span>` : ""}
+    ${it.note ? `<span class="note">${esc(it.note)}</span>` : ""}
+  </button>`;
+}
+function renderItems() {
+  const box = $("#listView");
+  const open = S.items.filter(i => !i.checked);
+  const done = S.items.filter(i => i.checked).sort((a, b) => (b.checkedAt || 0) - (a.checkedAt || 0));
+  if (!S.items.length) {
+    box.innerHTML = `<div class="empty"><div class="big">🧺</div><h3>Liste vide</h3>Tape le nom d'un produit dans la barre ci-dessus pour l'ajouter.</div>`;
+    return;
+  }
+  let html = `<div class="toolbar"><span>${open.length} à acheter</span><span class="sp"></span>
+    <span class="seg"><button data-sort="cat" class="${S.sort === "cat" ? "on" : ""}">Rayons</button><button data-sort="add" class="${S.sort === "add" ? "on" : ""}">Ajout</button></span></div>`;
+  if (open.length) {
+    if (S.sort === "cat") {
+      const groups = {};
+      open.forEach(it => { (groups[CAT[it.cat] ? it.cat : "au"] ||= []).push(it); });
+      CATS.forEach(([cid]) => {
+        const g = groups[cid]; if (!g) return;
+        g.sort((a, b) => a.name.localeCompare(b.name, "fr"));
+        html += `<div class="group"><div class="ghead"><span>${CAT[cid].icon}</span>${esc(CAT[cid].label)}<span class="n">${g.length}</span></div><div class="grid">${g.map(tileHTML).join("")}</div></div>`;
+      });
+    } else {
+      open.sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
+      html += `<div class="group"><div class="grid">${open.map(tileHTML).join("")}</div></div>`;
+    }
+  } else {
+    html += `<div class="empty" style="padding:28px 20px"><div class="big">🎉</div><h3>Tout est dans le panier</h3></div>`;
+  }
+  if (done.length) {
+    html += `<div class="group"><div class="ghead"><span>✓</span>Dans le panier<span class="n">${done.length}</span><span class="sp"></span><button data-act="clear">Retirer</button></div><div class="grid">${done.map(tileHTML).join("")}</div></div>`;
+  }
+  html += `<p class="hint">Touche un produit pour le cocher · appui long pour le modifier</p>`;
+  box.innerHTML = html;
+}
+// gestes sur les tuiles : touche = cocher, appui long = modifier
+(function bindTiles() {
+  const box = $("#listView");
+  let timer = null, longFired = false, sx = 0, sy = 0;
+  box.addEventListener("pointerdown", e => {
+    const t = e.target.closest(".tile[data-id]"); if (!t) return;
+    longFired = false; sx = e.clientX; sy = e.clientY;
+    clearTimeout(timer);
+    timer = setTimeout(() => { longFired = true; if (navigator.vibrate) navigator.vibrate(12); editItem(t.dataset.id); }, 460);
+  });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(ev => box.addEventListener(ev, () => clearTimeout(timer)));
+  box.addEventListener("pointermove", e => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 10) clearTimeout(timer); });
+  box.addEventListener("contextmenu", e => { const t = e.target.closest(".tile[data-id]"); if (t) { e.preventDefault(); if (!longFired) { longFired = true; editItem(t.dataset.id); } } });
+  box.addEventListener("click", e => {
+    const s = e.target.closest("[data-sort]");
+    if (s) { S.sort = s.dataset.sort; lsSet("cabas.sort", S.sort); renderItems(); return; }
+    if (e.target.closest("[data-act=clear]")) { clearChecked(); return; }
+    const t = e.target.closest(".tile[data-id]"); if (!t) return;
+    if (longFired) { longFired = false; return; }
+    toggleItem(t.dataset.id);
+  });
+})();
+function toggleItem(id) {
+  const it = S.items.find(i => i.id === id); if (!it) return;
+  const checked = !it.checked;
+  S.store.updateItems(S.cur, [id], { checked, checkedAt: checked ? Date.now() : null }, checked ? -1 : 1);
+}
+function clearChecked() {
+  const ids = S.items.filter(i => i.checked).map(i => i.id);
+  if (!ids.length) return;
+  const backup = S.items.filter(i => i.checked).map(i => { const c = Object.assign({}, i); delete c.id; delete c.createdAt; return c; });
+  const lid = S.cur;
+  S.store.deleteItems(lid, ids, 0);
+  toast(ids.length + " article" + (ids.length > 1 ? "s" : "") + " retiré" + (ids.length > 1 ? "s" : ""), "Annuler", () => backup.forEach(it => S.store.addItem(lid, it)));
+}
+
+/* ============================================================
+   Recherche / ajout
+   ============================================================ */
+const qInput = $("#q");
+qInput.addEventListener("focus", () => openSearch());
+qInput.addEventListener("input", () => { S.q = qInput.value; openSearch(); renderSearch(); });
+qInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const r = searchProducts(S.q);
+    if (!S.q.trim()) return;
+    const top = r.exact || r.list[0];
+    if (top) pickProduct(top.pid); else createSheet(S.q.trim());
+  }
+});
+$("#btnDone").addEventListener("click", e => { e.preventDefault(); closeSearch(); });
+function openSearch() {
+  if (S.searching) return;
+  S.searching = true;
+  pushLayer("search");
+  $("#btnDone").classList.remove("hidden");
+  $("#listView").classList.add("hidden");
+  $("#searchView").classList.remove("hidden");
+  renderSearch();
+}
+function closeSearch(fromPop) {
+  if (!S.searching) return;
+  S.searching = false; S.q = ""; qInput.value = ""; qInput.blur();
+  if (!fromPop) popLayer("search");
+  $("#btnDone").classList.add("hidden");
+  $("#listView").classList.remove("hidden");
+  $("#searchView").classList.add("hidden");
+}
+function allProducts() {
+  const map = new Map();
+  DEFAULT_PRODUCTS.forEach(p => map.set(p.pid, p));
+  S.items.forEach(it => { if (!map.has(it.pid)) map.set(it.pid, { pid: it.pid, name: it.name, icon: it.icon, cat: it.cat, unit: it.unit, unitLabel: it.unitLabel, tags: "" }); });
+  Object.entries(S.cat.products || {}).forEach(([pid, p]) => map.set(pid, Object.assign({ tags: "" }, map.get(pid) || {}, p, { pid, custom: true })));
+  return [...map.values()];
+}
+const productOf = pid => allProducts().find(p => p.pid === pid);
+function searchProducts(q) {
+  const nq = norm(q), kq = keyOf(q);
+  if (!nq) return { list: [], exact: null };
+  const freq = S.cat.freq || {};
+  const scored = [];
+  for (const p of allProducts()) {
+    const n = norm(p.name);
+    let s = 0;
+    if (p.pid === kq || n === nq) s = 100;
+    else if (n.startsWith(nq)) s = 60;
+    else if (n.split(/[\s'’-]+/).some(w => w.startsWith(nq))) s = 45;
+    else if (n.includes(nq) || p.pid.includes(kq)) s = 25;
+    else if (nq.length >= 2 && norm(p.tags).split(" ").some(w => w.startsWith(nq))) s = 15;
+    if (!s) continue;
+    s += Math.min(20, (freq[p.pid] || 0) * 2);
+    scored.push({ p, s });
+  }
+  scored.sort((a, b) => b.s - a.s || a.p.name.localeCompare(b.p.name, "fr"));
+  const list = scored.slice(0, 48).map(x => x.p);
+  return { list, exact: list.find(p => p.pid === kq || norm(p.name) === nq) || null };
+}
+function openItemFor(pid) { return S.items.find(i => i.pid === pid && !i.checked); }
+function ptileHTML(p) {
+  const it = S.items.find(i => i.pid === p.pid && !i.checked);
+  const q = it ? (fmtQty(it.qty, it.unit, it.unitLabel) || "✓") : "";
+  return `<button class="tile ptile${it ? " inlist" : ""}" data-pid="${esc(p.pid)}"><span class="ic">${esc(p.icon)}</span><span class="nm">${esc(p.name)}</span>${q ? `<span class="q">${esc(q)}</span>` : ""}</button>`;
+}
+function renderSearch() {
+  const box = $("#searchView");
+  const q = S.q.trim();
+  if (q) {
+    const { list, exact } = searchProducts(q);
+    let html = `<div class="grid">`;
+    if (!exact) html += `<button class="tile ptile create" data-create="1"><span class="ic">＋</span><span class="nm">Créer « ${esc(q)} »</span></button>`;
+    html += list.map(ptileHTML).join("") + `</div>`;
+    if (!list.length) html += `<p class="hint">Aucun produit trouvé — crée-le avec son icône.</p>`;
+    box.innerHTML = html;
+    return;
+  }
+  const freq = S.cat.freq || {};
+  const hasFreq = Object.keys(freq).length > 0;
+  if (!S.chip) S.chip = hasFreq ? "freq" : "fl";
+  const custom = Object.keys(S.cat.products || {}).length > 0;
+  let chips = `<div class="chips">` + (hasFreq ? `<button class="chip${S.chip === "freq" ? " on" : ""}" data-chip="freq">⭐ Habituels</button>` : "") +
+    (custom ? `<button class="chip${S.chip === "mine" ? " on" : ""}" data-chip="mine">✏️ Mes produits</button>` : "") +
+    CATS.map(([id, label, icon]) => `<button class="chip${S.chip === id ? " on" : ""}" data-chip="${id}">${icon} ${esc(label)}</button>`).join("") + `</div>`;
+  let prods;
+  const all = allProducts();
+  if (S.chip === "freq") prods = all.filter(p => freq[p.pid]).sort((a, b) => freq[b.pid] - freq[a.pid]).slice(0, 36);
+  else if (S.chip === "mine") prods = all.filter(p => S.cat.products && S.cat.products[p.pid]).sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  else prods = all.filter(p => (CAT[p.cat] ? p.cat : "au") === S.chip).sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  box.innerHTML = chips + `<div class="grid">${prods.map(ptileHTML).join("")}</div>` +
+    (!prods.length ? `<p class="hint">Rien ici pour l'instant.</p>` : "") +
+    `<p class="hint">Tape un nom pour chercher, ou crée ton propre produit.</p>`;
+}
+$("#searchView").addEventListener("click", e => {
+  const c = e.target.closest("[data-chip]");
+  if (c) { S.chip = c.dataset.chip; renderSearch(); return; }
+  if (e.target.closest("[data-create]")) { createSheet(S.q.trim()); return; }
+  const t = e.target.closest("[data-pid]");
+  if (t) pickProduct(t.dataset.pid);
+});
+function pickProduct(pid) {
+  const existing = openItemFor(pid);
+  if (existing) { itemSheet({ mode: "edit", item: existing, already: true }); return; }
+  const p = productOf(pid);
+  if (p) itemSheet({ mode: "add", product: p });
+}
+function createSheet(name) { itemSheet({ mode: "create", product: { pid: keyOf(name), name, icon: guessIcon(name), cat: guessCat(name), unit: "pc" } }); }
+function guessProduct(name) {
+  const words = keyOf(name).split("_").filter(w => w.length >= 3);
+  return DEFAULT_PRODUCTS.find(p => p.pid === keyOf(name)) ||
+    DEFAULT_PRODUCTS.find(p => words.includes(p.pid)) ||
+    DEFAULT_PRODUCTS.find(p => words.includes(p.pid.split("_")[0]) && p.pid.split("_")[0].length >= 4) || null;
+}
+function guessIcon(name) { const h = guessProduct(name); return h ? h.icon : "🛒"; }
+function guessCat(name) { const h = guessProduct(name); return h ? h.cat : "au"; }
+function editItem(id) { const it = S.items.find(i => i.id === id); if (it) itemSheet({ mode: "edit", item: it }); }
+
+/* ============================================================
+   Feuille « produit » : ajout / modification / création
+   ============================================================ */
+function itemSheet(o) {
+  const edit = o.mode === "edit", create = o.mode === "create";
+  const base = edit ? o.item : o.product;
+  const last = (S.cat.last || {})[base.pid] || {};
+  const st = {
+    name: base.name, icon: base.icon || "🛒", cat: CAT[base.cat] ? base.cat : "au",
+    unit: edit ? (base.unit || "pc") : (last.u || base.unit || "pc"),
+    note: edit ? (base.note || "") : ""
+  };
+  const u0 = unitOf(st.unit, base.unitLabel);
+  st.qty = edit ? (base.qty ?? "") : (last.q ?? (u0.q || 1));
+  const startIcon = st.icon, startCat = st.cat;
+  let moreUnits = false, showIcons = create;
+
+  function unitChips() {
+    const us = allUnits();
+    const vis = us.filter(u => u.main || u.custom || u.id === st.unit || moreUnits);
+    return vis.map(u => `<button class="chip${u.id === st.unit ? " on" : ""}" data-unit="${esc(u.id)}">${esc(u.id === "pc" ? "pièce(s)" : u.label)}</button>`).join("") +
+      (moreUnits ? "" : `<button class="chip add" data-act="more">Plus…</button>`) +
+      `<button class="chip add" data-act="newunit">＋ Unité</button>`;
+  }
+  function body() {
+    return `<div class="grab"></div>
+    <div class="shead">
+      <button class="bigico" data-act="icons" aria-label="Changer l'icône">${esc(st.icon)}<span class="pen">✎</span></button>
+      <div class="tt">
+        ${edit || create ? `<input class="inp title" id="fName" value="${esc(st.name)}" placeholder="Nom du produit" maxlength="60">` : `<h3>${esc(st.name)}</h3>`}
+        <div class="sub">${o.already ? "Déjà dans la liste · " : ""}${CAT[st.cat].icon} ${esc(CAT[st.cat].label)}</div>
+      </div>
+    </div>
+    <div id="icoBox" class="${showIcons ? "" : "hidden"}">
+      <span class="lbl" style="margin-top:0">Icône</span>
+      <div class="icogrid">${ICONS.map(i => `<button data-ico="${i}" class="${i === st.icon ? "on" : ""}">${i}</button>`).join("")}</div>
+      <div class="row" style="margin-top:8px"><input class="inp" id="fIco" placeholder="…ou colle n'importe quel emoji" maxlength="8"></div>
+    </div>
+    ${edit || create ? `<span class="lbl">Rayon</span><div class="chips" id="catChips">${CATS.map(([id, label, icon]) => `<button class="chip${id === st.cat ? " on" : ""}" data-cat="${id}">${icon} ${esc(label)}</button>`).join("")}</div>` : ""}
+    <span class="lbl">Quantité</span>
+    <div class="qty"><button data-act="minus" aria-label="Moins">−</button><input class="inp" id="fQty" inputmode="decimal" value="${esc(st.qty === "" ? "" : String(st.qty).replace(".", ","))}" placeholder="—"><button data-act="plus" aria-label="Plus">+</button></div>
+    <span class="lbl">Unité</span>
+    <div class="chips wrapchips" id="unitChips">${unitChips()}</div>
+    <div class="row hidden" id="newUnitRow" style="margin-top:6px"><input class="inp" id="fUnit" placeholder="ex. verre, part, poignée" maxlength="20"><button class="btn primary" data-act="saveunit" style="height:48px">OK</button></div>
+    <span class="lbl">Note</span>
+    <input class="inp" id="fNote" value="${esc(st.note)}" placeholder="Marque, détail… (facultatif)" maxlength="80">
+    <div class="sacts">
+      ${edit ? `<button class="btn danger" data-act="del">Supprimer</button>` : `<button class="btn" data-act="close">Annuler</button>`}
+      <button class="btn primary" data-act="save">${create ? "Créer et ajouter" : edit ? "Enregistrer" : "Ajouter"}</button>
+    </div>`;
+  }
+  openSheet(body(), sh => {
+    const syncFields = () => {
+      const n = $("#fName", sh); if (n) st.name = n.value;
+      st.qty = $("#fQty", sh).value; st.note = $("#fNote", sh).value;
+    };
+    const rerender = () => { syncFields(); const y = sh.scrollTop; sh.innerHTML = body(); sh.scrollTop = y; };
+    sh.onclick = e => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.ico) { st.icon = b.dataset.ico; showIcons = false; rerender(); return; }
+      if (b.dataset.cat) { st.cat = b.dataset.cat; rerender(); return; }
+      if (b.dataset.unit) {
+        syncFields();
+        const prev = unitOf(st.unit), nu = unitOf(b.dataset.unit);
+        st.unit = nu.id;
+        const qn = parseFloat(String(st.qty).replace(",", "."));
+        if (!qn || (prev.q && nu.q && qn === prev.q) || (prev.abbr !== nu.abbr)) st.qty = nu.q || 1;
+        rerender(); return;
+      }
+      const a = b.dataset.act;
+      if (a === "icons") { showIcons = !showIcons; rerender(); }
+      else if (a === "more") { moreUnits = true; rerender(); }
+      else if (a === "newunit") { $("#newUnitRow", sh).classList.remove("hidden"); $("#fUnit", sh).focus(); }
+      else if (a === "saveunit") {
+        const label = $("#fUnit", sh).value.trim(); if (!label) return;
+        const id = "u_" + keyOf(label);
+        if (!UNIT[id] && !(S.cat.units || {})[id]) { S.store.saveUnit(id, { label }); S.cat.units = Object.assign({}, S.cat.units, { [id]: { label } }); }
+        st.unit = id; st.qty = st.qty || 1; rerender();
+      }
+      else if (a === "minus" || a === "plus") {
+        syncFields();
+        const u = unitOf(st.unit);
+        const step = u.step || 1;
+        let v = parseFloat(String(st.qty).replace(",", ".")) || 0;
+        v = a === "plus" ? v + step : Math.max(0, v - step);
+        v = Math.round(v * 100) / 100;
+        $("#fQty", sh).value = v ? String(v).replace(".", ",") : "";
+        st.qty = $("#fQty", sh).value;
+      }
+      else if (a === "close") closeSheet();
+      else if (a === "del") {
+        const it = o.item, lid = S.cur;
+        const copy = Object.assign({}, it); delete copy.id; delete copy.createdAt;
+        S.store.deleteItems(lid, [it.id], it.checked ? 0 : -1);
+        closeSheet();
+        toast(`${it.icon} ${it.name} supprimé`, "Annuler", () => S.store.addItem(lid, copy));
+      }
+      else if (a === "save") save();
+    };
+    sh.oninput = e => {
+      if (e.target.id === "fIco") { const v = e.target.value.trim(); if (v) { st.icon = [...v].slice(0, 2).join(""); $(".bigico", sh).firstChild.textContent = st.icon; } }
+    };
+    sh.onkeydown = e => {
+      if (e.key === "Enter" && e.target.id === "fUnit") { e.preventDefault(); $("[data-act=saveunit]", sh).click(); }
+      else if (e.key === "Enter" && e.target.tagName === "INPUT" && e.target.id !== "fIco") { e.preventDefault(); save(); }
+    };
+    function save() {
+      syncFields();
+      const name = (st.name || "").trim();
+      if (!name) { toast("Donne un nom au produit"); return; }
+      const qty = Math.max(0, parseFloat(String(st.qty).replace(",", ".")) || 0);
+      const u = unitOf(st.unit, base.unitLabel);
+      const pid = edit || create ? keyOf(name) : base.pid;
+      const data = { pid, name, icon: st.icon, cat: st.cat, qty, unit: u.id, unitLabel: u.label, note: (st.note || "").trim() };
+      const known = productOf(pid);
+      if (create || st.icon !== startIcon || st.cat !== startCat || (known && known.custom) || !known) {
+        S.store.saveProduct(pid, { name, icon: st.icon, cat: st.cat, unit: u.id });
+      }
+      if (edit) {
+        S.store.updateItems(S.cur, [o.item.id], Object.assign({}, data, o.item.checked && o.already ? { checked: false } : {}), 0);
+        closeSheet();
+        if (S.searching) { S.q = ""; qInput.value = ""; renderSearch(); }
+      } else {
+        const dup = openItemFor(pid);
+        if (dup) S.store.updateItems(S.cur, [dup.id], data, 0);
+        else S.store.addItem(S.cur, Object.assign(data, { checked: false, addedBy: S.store.me.name, addedByUid: S.store.uid }));
+        S.store.bump(pid, u.id, qty || null);
+        closeSheet();
+        toast(`${st.icon} ${name} ajouté`);
+        S.q = ""; qInput.value = "";
+        if (S.searching) renderSearch();
+      }
+    }
+  });
+}
+
+/* ============================================================
+   Feuilles : nouvelle liste, options, partage, compte
+   ============================================================ */
+function listSheet(l) {
+  const st = { name: l ? l.name : "", icon: l ? (l.icon || "🛒") : "🛒" };
+  const body = () => `<div class="grab"></div>
+    <div class="shead"><h3>${l ? "Modifier la liste" : "Nouvelle liste"}</h3></div>
+    <input class="inp" id="fLName" value="${esc(st.name)}" placeholder="ex. Courses de la semaine" maxlength="40">
+    <span class="lbl">Icône</span>
+    <div class="chips wrapchips">${LIST_ICONS.map(i => `<button class="chip${i === st.icon ? " on" : ""}" data-li="${i}" style="font-size:20px">${i}</button>`).join("")}</div>
+    <div class="sacts"><button class="btn" data-act="close">Annuler</button><button class="btn primary" data-act="ok">${l ? "Enregistrer" : "Créer"}</button></div>`;
+  openSheet(body(), sh => {
+    setTimeout(() => $("#fLName", sh).focus(), 280);
+    const ok = () => {
+      const name = $("#fLName", sh).value.trim() || "Courses";
+      if (l) { S.store.updateList(l.id, { name, icon: st.icon }); closeSheet(); }
+      else { const id = S.store.createList({ name, icon: st.icon }); closeSheet(false, () => openList(id)); }
+    };
+    sh.onclick = e => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.li) { st.name = $("#fLName", sh).value; st.icon = b.dataset.li; sh.innerHTML = body(); return; }
+      if (b.dataset.act === "close") closeSheet();
+      if (b.dataset.act === "ok") ok();
+    };
+    sh.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); ok(); } };
+  });
+}
+function listMenuSheet() {
+  const l = curList(); if (!l) return;
+  const owner = S.store.kind === "local" || l.ownerUid === S.store.uid;
+  const nDone = S.items.filter(i => i.checked).length;
+  openSheet(`<div class="grab"></div>
+    <div class="shead"><span class="bigico">${esc(l.icon || "🛒")}</span><div class="tt"><h3>${esc(l.name)}</h3><div class="sub">${S.items.length} article${S.items.length > 1 ? "s" : ""}</div></div></div>
+    <div class="menu">
+      <button data-act="edit"><span class="mi">✏️</span>Renommer / changer l'icône</button>
+      ${S.store.kind === "remote" ? `<button data-act="share"><span class="mi">👥</span>Partager la liste</button>` : ""}
+      <button data-act="uncheck" ${nDone ? "" : "disabled style=opacity:.4"}><span class="mi">↩️</span>Tout décocher</button>
+      <button data-act="clear" ${nDone ? "" : "disabled style=opacity:.4"}><span class="mi">🧹</span>Retirer les articles cochés</button>
+      <button data-act="copy"><span class="mi">📋</span>Copier la liste en texte</button>
+      ${owner ? `<button class="red" data-act="delete"><span class="mi">🗑️</span>Supprimer la liste</button>` : `<button class="red" data-act="leave"><span class="mi">🚪</span>Quitter la liste</button>`}
+    </div>`, sh => {
+    sh.onclick = async e => {
+      const a = e.target.closest("[data-act]"); if (!a) return;
+      const act = a.dataset.act;
+      if (act === "edit") { replaceSheet(() => listSheet(l)); }
+      else if (act === "share") { replaceSheet(shareSheet); }
+      else if (act === "uncheck") { const ids = S.items.filter(i => i.checked).map(i => i.id); S.store.updateItems(S.cur, ids, { checked: false, checkedAt: null }, ids.length); closeSheet(); }
+      else if (act === "clear") { closeSheet(false, clearChecked); }
+      else if (act === "copy") {
+        const lines = S.items.filter(i => !i.checked).map(i => `• ${i.icon} ${i.name}${i.qty ? " — " + fmtQty(i.qty, i.unit, i.unitLabel) : ""}${i.note ? " (" + i.note + ")" : ""}`);
+        const txt = `${l.icon || "🛒"} ${l.name}\n` + lines.join("\n");
+        try { await navigator.clipboard.writeText(txt); toast("Liste copiée"); } catch (err) { toast("Copie impossible"); }
+        closeSheet();
+      }
+      else if (act === "delete") {
+        if (!confirm(`Supprimer « ${l.name} » pour tous ses membres ?`)) return;
+        const id = l.id, ids = S.items.map(i => i.id);
+        closeList();
+        S.store.deleteList(id, ids, l.joinCode);
+        toast("Liste supprimée");
+      }
+      else if (act === "leave") {
+        if (!confirm(`Quitter « ${l.name} » ? Tu n'y auras plus accès.`)) return;
+        const id = l.id;
+        closeList();
+        S.store.removeMember(id, S.store.email, S.store.uid);
+      }
+    };
+  });
+}
+function shareSheet() {
+  const l = curList(); if (!l || S.store.kind !== "remote") return;
+  const owner = l.ownerUid === S.store.uid;
+  const byEmail = {};
+  Object.entries(l.members || {}).forEach(([uid, m]) => { if (m && m.email) byEmail[m.email] = Object.assign({ uid }, m); });
+  const rows = (l.memberEmails || []).map(mail => {
+    const m = byEmail[mail];
+    const isOwner = m ? m.uid === l.ownerUid : mail === l.ownerEmail;
+    const isMe = mail === S.store.email;
+    return `<div class="mrow">${avatar(m || { email: mail })}
+      <div class="info"><b>${esc(m ? m.name : mail)}${isMe ? " (toi)" : ""}</b><span>${esc(mail)}${m ? "" : " · invitation en attente"}</span></div>
+      ${isOwner ? `<span class="tag">Créatrice·eur</span>` : (owner && !isMe ? `<button class="small-x" data-rm="${esc(mail)}" data-uid="${esc(m ? m.uid : "")}">Retirer</button>` : "")}
+    </div>`;
+  }).join("");
+  openSheet(`<div class="grab"></div>
+    <div class="shead"><h3>Partager « ${esc(l.name)} »</h3></div>
+    <div>${rows}</div>
+    <span class="lbl">Inviter par e-mail Google</span>
+    <div class="row"><input class="inp" id="fMail" type="email" inputmode="email" placeholder="prenom@gmail.com" autocomplete="off"><button class="btn primary" data-act="inv" style="height:48px">Inviter</button></div>
+    <div class="note-box">La personne voit la liste dès qu'elle se connecte à Cabas avec ce compte Google. Tout le monde peut ajouter, cocher et modifier, en temps réel.</div>
+    <span class="lbl">Ou envoyer un lien</span>
+    <button class="btn ghost" data-act="link" style="width:100%">🔗 Partager le lien d'invitation</button>`, sh => {
+    sh.onclick = async e => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.rm) {
+        if (!confirm(`Retirer ${b.dataset.rm} de la liste ?`)) return;
+        await S.store.removeMember(l.id, b.dataset.rm, b.dataset.uid || null);
+        closeSheet(); toast("Membre retiré");
+      } else if (b.dataset.act === "inv") invite();
+      else if (b.dataset.act === "link") {
+        const url = S.store.shareLink(l);
+        const text = `Rejoins ma liste de courses « ${l.name} » sur Cabas :`;
+        if (navigator.share) { try { await navigator.share({ title: "Cabas", text, url }); } catch (err) {} }
+        else { try { await navigator.clipboard.writeText(text + " " + url); toast("Lien copié"); } catch (err) { prompt("Copie ce lien :", url); } }
+      }
+    };
+    sh.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); invite(); } };
+    function invite() {
+      const mail = $("#fMail", sh).value.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { toast("Adresse e-mail invalide"); return; }
+      if ((l.memberEmails || []).includes(mail)) { toast("Déjà membre"); return; }
+      S.store.invite(l.id, mail);
+      closeSheet(); toast("Invitation ajoutée pour " + mail);
+    }
+  });
+}
+function accountSheet() {
+  const st = S.store; if (!st) return;
+  const nProd = Object.keys(S.cat.products || {}).length, nUnit = Object.keys(S.cat.units || {}).length;
+  openSheet(`<div class="grab"></div>
+    <div class="shead">${st.kind === "remote" ? avatar(st.me).replace('class="avatar"', 'class="avatar" style="width:52px;height:52px;font-size:20px"') : '<span class="bigico">👤</span>'}
+      <div class="tt"><h3>${esc(st.kind === "remote" ? st.me.name : "Sans compte")}</h3><div class="sub">${esc(st.kind === "remote" ? st.me.email : "Listes enregistrées sur cet appareil")}</div></div></div>
+    <div class="menu">
+      <button data-act="catalog"><span class="mi">🏷️</span>Mes produits & unités <span style="color:var(--muted);font-weight:400;margin-left:auto">${nProd + nUnit || ""}</span></button>
+      ${installPrompt ? `<button data-act="install"><span class="mi">📲</span>Installer l'app</button>` : ""}
+      ${st.kind === "local" && canFirebase ? `<button data-act="google"><span class="mi">🔐</span>Se connecter avec Google <span style="color:var(--muted);font-weight:400;font-size:12px;margin-left:auto">tes listes suivent</span></button>` : ""}
+      ${st.kind === "remote" ? `<button class="red" data-act="out"><span class="mi">🚪</span>Se déconnecter</button>` : `<button data-act="exit"><span class="mi">↩️</span>Retour à l'écran d'accueil</button>`}
+    </div>`, sh => {
+    sh.onclick = async e => {
+      const a = e.target.closest("[data-act]"); if (!a) return;
+      const act = a.dataset.act;
+      if (act === "catalog") replaceSheet(catalogSheet);
+      else if (act === "install") { closeSheet(); installPrompt.prompt(); installPrompt = null; }
+      else if (act === "google") { closeSheet(); signIn(); }
+      else if (act === "out") { closeSheet(); lsSet("cabas.mode", "out"); await fb.au.signOut(auth); }
+      else if (act === "exit") { closeSheet(); stopAll(); S.store = null; lsSet("cabas.mode", "out"); show("scrLogin"); }
+    };
+  });
+}
+function catalogSheet() {
+  const prods = Object.entries(S.cat.products || {}).sort((a, b) => a[1].name.localeCompare(b[1].name, "fr"));
+  const units = Object.entries(S.cat.units || {}).sort((a, b) => a[1].label.localeCompare(b[1].label, "fr"));
+  const isDefault = pid => DEFAULT_PRODUCTS.some(p => p.pid === pid);
+  openSheet(`<div class="grab"></div>
+    <div class="shead"><h3>Mes produits & unités</h3></div>
+    <span class="lbl" style="margin-top:0">Produits créés ou personnalisés</span>
+    ${prods.length ? prods.map(([pid, p]) => `<div class="mrow"><span class="em">${esc(p.icon)}</span><div class="info"><b>${esc(p.name)}</b><span>${esc((CAT[p.cat] || CAT.au).label)}${isDefault(pid) ? " · icône/rayon personnalisés" : ""}</span></div><button class="small-x" data-p="${esc(pid)}">${isDefault(pid) ? "Réinitialiser" : "Supprimer"}</button></div>`).join("") : `<div class="note-box">Aucun pour l'instant. Tape un nom inconnu dans la recherche d'une liste, puis « Créer ».</div>`}
+    <span class="lbl">Unités personnalisées</span>
+    ${units.map(([id, u]) => `<div class="mrow"><span class="em">📏</span><div class="info"><b>${esc(u.label)}</b></div><button class="small-x" data-u="${esc(id)}">Supprimer</button></div>`).join("")}
+    <div class="row" style="margin-top:8px"><input class="inp" id="fNewUnit" placeholder="Nouvelle unité (ex. verre, part)" maxlength="20"><button class="btn primary" data-act="addu" style="height:48px">Ajouter</button></div>`, sh => {
+    const addU = () => {
+      const label = $("#fNewUnit", sh).value.trim(); if (!label) return;
+      const id = "u_" + keyOf(label);
+      S.store.saveUnit(id, { label });
+      S.cat.units = Object.assign({}, S.cat.units, { [id]: { label } });
+      replaceSheet(catalogSheet);
+    };
+    sh.onclick = e => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.p) { S.store.deleteProduct(b.dataset.p); const c = Object.assign({}, S.cat.products); delete c[b.dataset.p]; S.cat.products = c; replaceSheet(catalogSheet); }
+      else if (b.dataset.u) { S.store.deleteUnit(b.dataset.u); const c = Object.assign({}, S.cat.units); delete c[b.dataset.u]; S.cat.units = c; replaceSheet(catalogSheet); }
+      else if (b.dataset.act === "addu") addU();
+    };
+    sh.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); addU(); } };
+  });
+}
+
+/* ============================================================
+   Feuille générique + toast
+   ============================================================ */
+const sheet = $("#sheet"), scrim = $("#scrim");
+function openSheet(html, mount) {
+  sheet.onclick = null; sheet.oninput = null; sheet.onkeydown = null;
+  sheet.innerHTML = html;
+  sheet.scrollTop = 0;
+  if (!sheetOpen) { sheetOpen = true; pushLayer("sheet"); }
+  requestAnimationFrame(() => { scrim.classList.add("on"); sheet.classList.add("on"); });
+  if (mount) mount(sheet);
+}
+function replaceSheet(fn) { fn(); }
+function closeSheet(fromPop, then) {
+  if (!sheetOpen) { if (then) then(); return; }
+  sheetOpen = false;
+  scrim.classList.remove("on"); sheet.classList.remove("on");
+  if (document.activeElement && sheet.contains(document.activeElement)) document.activeElement.blur();
+  if (!fromPop) popLayer("sheet", then); else if (then) then();
+}
+scrim.addEventListener("click", () => closeSheet());
+// glisser vers le bas pour fermer
+(function () {
+  let y0 = null, dy = 0;
+  sheet.addEventListener("touchstart", e => { if (sheet.scrollTop <= 0 && e.target.closest(".grab,.shead")) { y0 = e.touches[0].clientY; dy = 0; sheet.style.transition = "none"; } }, { passive: true });
+  sheet.addEventListener("touchmove", e => { if (y0 == null) return; dy = Math.max(0, e.touches[0].clientY - y0); sheet.style.transform = `translateY(${dy}px)`; }, { passive: true });
+  sheet.addEventListener("touchend", () => { if (y0 == null) return; sheet.style.transition = ""; sheet.style.transform = ""; if (dy > 90) closeSheet(); y0 = null; });
+})();
+let toastT = null;
+function toast(msg, actLabel, act) {
+  const t = $("#toast"), b = $("#toastAct");
+  $("#toastMsg").textContent = msg;
+  b.classList.toggle("hidden", !actLabel);
+  b.textContent = actLabel || "";
+  b.onclick = () => { t.classList.remove("on"); if (act) act(); };
+  t.classList.add("on");
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove("on"), actLabel ? 5000 : 2600);
+}
+
+/* ---------- PWA ---------- */
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; });
+if ("serviceWorker" in navigator && canFirebase) navigator.serviceWorker.register("sw.js").catch(() => {});
+
+boot();
+</script>
+</body>
+</html>
