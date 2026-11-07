@@ -783,8 +783,384 @@ const RECIPES = [
     ing: [["Pêches", 4, "pc"], ["Miel", 1, "pot"], ["Yaourts", 1, "pack"], ["Amandes", 1, "sachet", "p"]],
     steps: ["Coupe les pêches en deux et retire le noyau.", "Arrose de miel et rôtis 15 min à 200 °C.", "Sers tiède avec un yaourt et des amandes effilées."] }
 ];
-RECIPES.forEach(r => { r.monthList = parseMonths(r.months); });
+/* ---------- recettes supplémentaires (t : e = entrée/soupe, p = plat, d = dessert ; d = détails) ---------- */
+const MORE_RECIPES = [
+  // ===== automne / hiver =====
+  { id: "hachis-parmentier", name: "Hachis parmentier", icon: "🥔", months: "10-3", t: "p", time: "1 h", serves: 4,
+    ing: [["Pommes de terre", 1, "kg"], ["Viande hachée", 500, "g"], ["Oignons", 2, "pc"], ["Lait", 0.2, "l"], ["Beurre", 50, "g"], ["Emmental râpé", 1, "sachet"], ["Sel", 1, "paquet", "p"]],
+    steps: ["Cuis les pommes de terre épluchées 20 min à l'eau salée, puis écrase-les avec le beurre et le lait chaud.", "Fais revenir les oignons émincés, ajoute la viande et laisse dorer 10 min. Sale, poivre.", "Étale la viande dans un plat, couvre de purée et de fromage.", "Gratine 20 min à 200 °C."],
+    d: { level: "Facile", prep: "25 min", cook: "40 min", tools: ["Casserole", "Presse-purée", "Poêle", "Plat à gratin"], tip: "Ajoute une cuillère de concentré de tomate à la viande pour plus de goût.", keep: "3 jours au frigo ; se congèle très bien." } },
+  { id: "boeuf-bourguignon", name: "Bœuf bourguignon", icon: "🍷", months: "10-3", t: "p", time: "3 h 30", serves: 6,
+    ing: [["Bœuf", 1200, "g"], ["Vin rouge", 75, "cl"], ["Carottes", 0.5, "kg"], ["Champignons", 250, "g"], ["Lardons", 150, "g"], ["Oignons", 2, "pc"], ["Farine", 1, "kg", "p"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Fais dorer le bœuf en gros cubes dans une cocotte, puis réserve.", "Fais revenir lardons et oignons, remets la viande et saupoudre de 2 cuillères de farine.", "Verse le vin et un bol de bouillon, ajoute les carottes en rondelles. Laisse mijoter 3 h à feu doux.", "Ajoute les champignons poêlés 20 min avant la fin."],
+    d: { level: "Moyen", prep: "30 min", cook: "3 h", tools: ["Cocotte en fonte", "Poêle"], tip: "Choisis du paleron ou du gîte : ces morceaux deviennent fondants en longue cuisson. Encore meilleur réchauffé.", keep: "4 jours au frigo ; se congèle." } },
+  { id: "poulet-legumes-racines", name: "Poulet rôti aux légumes racines", icon: "🍗", months: "10-3", t: "p", time: "1 h", serves: 4,
+    ing: [["Cuisses de poulet", 4, "pc"], ["Panais", 2, "pc"], ["Carottes", 0.5, "kg"], ["Pommes de terre", 0.6, "kg"], ["Oignons rouges", 2, "pc"], ["Ail", 1, "pc"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Préchauffe le four à 200 °C.", "Coupe les légumes en gros morceaux, mélange-les avec l'huile, l'ail et du sel dans un grand plat.", "Pose les cuisses de poulet par-dessus, peau vers le haut.", "Enfourne 50 min en arrosant de jus à mi-cuisson."],
+    d: { level: "Facile", prep: "15 min", cook: "50 min", tools: ["Grand plat à four"], tip: "Quelques branches de thym ou de romarin dans le plat parfument tout.", keep: "3 jours au frigo." } },
+  { id: "veloute-panais", name: "Velouté de panais", icon: "🥕", months: "10-3", t: "e", time: "35 min", serves: 4,
+    ing: [["Panais", 4, "pc"], ["Pommes de terre", 0.3, "kg"], ["Oignons", 1, "pc"], ["Crème liquide", 1, "brique"], ["Noix", 1, "sachet"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Épluche et coupe panais, pommes de terre et oignon.", "Couvre-les de bouillon et laisse cuire 25 min.", "Mixe avec un peu de crème. Sers avec des noix concassées."],
+    d: { level: "Facile", prep: "10 min", cook: "25 min", tools: ["Cocotte", "Mixeur plongeant"], tip: "Le panais est naturellement sucré : une pincée de muscade ou de curry l'équilibre.", keep: "3 jours au frigo, 3 mois au congélateur." } },
+  { id: "saucisses-puree-celeri", name: "Saucisses & purée de céleri-rave", icon: "🌭", months: "10-3", t: "p", time: "40 min", serves: 4,
+    ing: [["Céleri-rave", 1, "pc"], ["Pommes de terre", 0.4, "kg"], ["Saucisses", 8, "pc"], ["Beurre", 40, "g"], ["Lait", 0.2, "l"], ["Moutarde", 1, "pot", "p"]],
+    steps: ["Épluche le céleri et les pommes de terre, coupe-les en cubes et cuis-les 25 min à l'eau salée.", "Pendant ce temps, fais dorer les saucisses à la poêle.", "Écrase les légumes avec le beurre et le lait chaud. Sers avec la moutarde."],
+    d: { level: "Facile", prep: "15 min", cook: "25 min", tools: ["Casserole", "Presse-purée", "Poêle"], tip: "Arrose le céleri coupé de citron s'il attend : il noircit vite.", keep: "Purée : 3 jours au frigo." } },
+  { id: "gratin-dauphinois", name: "Gratin dauphinois", icon: "🥔", months: "10-3", t: "p", time: "1 h 30", serves: 6,
+    ing: [["Pommes de terre", 1.2, "kg"], ["Crème liquide", 2, "brique"], ["Lait", 0.5, "l"], ["Ail", 1, "pc"], ["Beurre", 20, "g", "p"], ["Sel", 1, "paquet", "p"]],
+    steps: ["Préchauffe le four à 160 °C, frotte un plat avec l'ail et beurre-le.", "Coupe les pommes de terre en fines rondelles (sans les rincer).", "Fais-les frémir 10 min dans le lait et la crème salés, puis verse le tout dans le plat.", "Cuis 1 h 15, jusqu'à ce que le dessus soit doré."],
+    d: { level: "Facile", prep: "20 min", cook: "1 h 15", tools: ["Mandoline ou couteau", "Grande casserole", "Plat à gratin"], tip: "Le vrai gratin dauphinois n'a pas de fromage : c'est l'amidon des pommes de terre qui le rend crémeux.", keep: "3 jours au frigo." } },
+  { id: "salade-endives-pommes", name: "Salade d'endives, pommes & noix", icon: "🥗", months: "10-3", t: "e", time: "15 min", serves: 4,
+    ing: [["Endives", 4, "pc"], ["Pommes", 2, "pc"], ["Noix", 1, "sachet"], ["Comté", 100, "g"], ["Moutarde", 1, "pot", "p"], ["Vinaigre", 1, "bouteille", "p"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Émince les endives, coupe la pomme et le comté en dés.", "Prépare une vinaigrette moutardée.", "Mélange le tout et ajoute les noix au dernier moment."],
+    d: { level: "Facile", prep: "15 min", cook: "aucune", tools: ["Saladier"], tip: "Retire le cône dur à la base des endives : c'est lui qui concentre l'amertume.", keep: "À assaisonner au dernier moment." } },
+  { id: "soupe-oignon", name: "Soupe à l'oignon gratinée", icon: "🧅", months: "11-3", t: "e", time: "1 h", serves: 4,
+    ing: [["Oignons", 6, "pc"], ["Beurre", 50, "g"], ["Vin blanc", 10, "cl"], ["Baguette", 1, "pc"], ["Emmental râpé", 1, "sachet"], ["Farine", 1, "kg", "p"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Fais fondre les oignons émincés dans le beurre 25 min à feu doux, jusqu'à ce qu'ils soient bien dorés.", "Saupoudre d'une cuillère de farine, déglace au vin blanc puis ajoute 1,2 L de bouillon. Laisse cuire 20 min.", "Verse dans des bols, couvre de tranches de pain et de fromage.", "Gratine 5 min sous le gril."],
+    d: { level: "Facile", prep: "15 min", cook: "45 min", tools: ["Cocotte", "Bols allant au four"], tip: "Ne presse pas la cuisson des oignons : leur caramélisation fait tout le goût de la soupe.", keep: "Soupe sans pain : 3 jours au frigo." } },
+  { id: "saucisses-chou-rouge", name: "Saucisses au chou rouge & pommes", icon: "🥬", months: "10-3", t: "p", time: "1 h", serves: 4,
+    ing: [["Chou rouge", 1, "pc"], ["Pommes", 2, "pc"], ["Saucisses", 8, "pc"], ["Oignons", 1, "pc"], ["Vinaigre", 1, "bouteille", "p"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Émince finement le chou et l'oignon, coupe les pommes en dés.", "Fais-les suer dans une cocotte avec 2 cuillères de vinaigre et 1 de sucre, couvre et laisse braiser 40 min.", "Fais dorer les saucisses et ajoute-les au chou 10 min avant la fin."],
+    d: { level: "Facile", prep: "15 min", cook: "45 min", tools: ["Cocotte", "Poêle"], tip: "Le vinaigre garde au chou rouge sa belle couleur violette.", keep: "4 jours au frigo ; encore meilleur réchauffé." } },
+  { id: "topinambours-lardons", name: "Poêlée de topinambours aux lardons", icon: "🥔", months: "10-3", t: "p", time: "35 min", serves: 4,
+    ing: [["Topinambours", 800, "g"], ["Lardons", 150, "g"], ["Échalotes", 2, "pc"], ["Persil", 1, "botte"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Épluche les topinambours et coupe-les en rondelles épaisses.", "Fais-les dorer 20 min à la poêle avec un filet d'huile en remuant.", "Ajoute lardons et échalotes, laisse 10 min de plus. Parsème de persil."],
+    d: { level: "Facile", prep: "15 min", cook: "30 min", tools: ["Grande poêle", "Économe"], tip: "Le topinambour a un goût d'artichaut : il se marie aussi très bien en velouté.", keep: "2 jours au frigo." } },
+  { id: "lentilles-saucisses", name: "Petit salé aux lentilles", icon: "🫘", months: "10-3", t: "p", time: "1 h", serves: 4,
+    ing: [["Lentilles", 400, "g"], ["Saucisses", 4, "pc"], ["Lardons", 200, "g"], ["Carottes", 0.3, "kg"], ["Oignons", 1, "pc"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Fais revenir lardons, oignon et carottes en rondelles dans une cocotte.", "Ajoute les lentilles rincées et couvre de bouillon (environ 1 L).", "Pose les saucisses dessus et laisse mijoter 40 min à couvert."],
+    d: { level: "Facile", prep: "15 min", cook: "45 min", tools: ["Cocotte"], tip: "Les lentilles vertes du Puy tiennent parfaitement à la cuisson. Ne sale qu'à la fin.", keep: "4 jours au frigo." } },
+  { id: "raclette", name: "Raclette", icon: "🧀", months: "12-2", t: "p", time: "30 min", serves: 4,
+    ing: [["Raclette", 800, "g"], ["Pommes de terre", 1.2, "kg"], ["Jambon", 8, "tranche"], ["Jambon cru", 8, "tranche"], ["Saucisson", 1, "pc"], ["Cornichons", 1, "bocal"], ["Salade", 1, "pc"]],
+    steps: ["Cuis les pommes de terre en robe des champs 25 min.", "Dispose charcuterie, cornichons et salade sur la table.", "Allume l'appareil à raclette et fais fondre le fromage au fil du repas."],
+    d: { level: "Facile", prep: "10 min", cook: "25 min", tools: ["Appareil à raclette", "Casserole"], tip: "Compte 200 g de fromage par personne. Garde les pommes de terre au chaud dans un torchon.", keep: "Fromage entamé : 1 semaine au frigo, bien emballé." } },
+  { id: "poires-belle-helene", name: "Poires belle-Hélène", icon: "🍐", months: "9-2", t: "d", time: "30 min", serves: 4,
+    ing: [["Poires", 4, "pc"], ["Chocolat", 1, "tablette"], ["Crème liquide", 1, "brique"], ["Glaces", 1, "pc"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Épluche les poires et poche-les 15 min dans un sirop (1 L d'eau, 150 g de sucre).", "Fais fondre 150 g de chocolat avec 15 cl de crème.", "Sers les poires tièdes avec une boule de glace vanille et la sauce chocolat."],
+    d: { level: "Facile", prep: "10 min", cook: "20 min", tools: ["Casserole", "Petite casserole"], tip: "Garde la queue des poires : c'est plus joli à l'assiette.", keep: "Poires pochées : 3 jours au frigo dans leur sirop." } },
+  { id: "tarte-tatin", name: "Tarte Tatin", icon: "🍎", months: "9-3", t: "d", time: "1 h", serves: 6,
+    ing: [["Pommes", 7, "pc"], ["Pâte feuilletée", 1, "pc"], ["Beurre", 80, "g"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Fais un caramel avec 120 g de sucre et le beurre directement dans le moule (s'il va sur le feu) ou une poêle.", "Range les pommes en quartiers serrés par-dessus et cuis 10 min sur le feu.", "Couvre de pâte en rentrant les bords, pique-la.", "Enfourne 30 min à 200 °C, laisse tiédir 10 min puis retourne sur un plat."],
+    d: { level: "Moyen", prep: "20 min", cook: "40 min", tools: ["Moule allant sur le feu ou poêle", "Plat de service"], tip: "Prends des pommes qui se tiennent (golden, boskoop) et serre-les bien : elles réduisent à la cuisson.", keep: "2 jours à température ambiante." } },
+  { id: "galette-rois", name: "Galette des rois", icon: "👑", months: "1-1", t: "d", time: "1 h", serves: 8,
+    ing: [["Pâte feuilletée", 2, "pc"], ["Amandes", 2, "sachet"], ["Beurre", 100, "g"], ["Œufs", 3, "pc"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Mélange 125 g de poudre d'amande, 100 g de sucre, le beurre mou et 2 œufs.", "Étale la crème sur une pâte en laissant 2 cm de bord, ajoute la fève.", "Couvre de la seconde pâte, soude les bords, dore au jaune d'œuf et dessine des motifs.", "Cuis 30 min à 200 °C."],
+    d: { level: "Moyen", prep: "20 min", cook: "30 min", tools: ["Plaque de four", "Pinceau", "Saladier"], tip: "Place la fève près du bord : moins de risque de tomber dessus en coupant.", keep: "2 jours ; réchauffe 5 min au four." } },
+  { id: "crepes-maison", name: "Crêpes maison", icon: "🥞", months: "1-12", t: "d", time: "40 min", serves: 4,
+    ing: [["Farine", 0.25, "kg"], ["Œufs", 4, "pc"], ["Lait", 0.5, "l"], ["Beurre", 50, "g"], ["Pâte à tartiner", 1, "pot"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Mélange farine et œufs, puis ajoute le lait petit à petit en fouettant.", "Ajoute le beurre fondu et une pincée de sel. Laisse reposer 30 min si possible.", "Cuis les crêpes dans une poêle chaude légèrement beurrée, 1 min par face."],
+    d: { level: "Facile", prep: "10 min", cook: "30 min", tools: ["Saladier", "Fouet", "Poêle à crêpes", "Louche"], tip: "Un trait de bière ou de fleur d'oranger dans la pâte la rend plus légère.", keep: "Pâte : 1 jour au frigo. Crêpes : 3 jours, filmées." } },
+  { id: "moules-marinieres", name: "Moules marinières & frites", icon: "🦪", months: "9-1", t: "p", time: "30 min", serves: 4,
+    ing: [["Moules", 2, "kg"], ["Échalotes", 3, "pc"], ["Vin blanc", 20, "cl"], ["Persil", 1, "botte"], ["Crème fraîche", 1, "pot"], ["Frites", 1, "sachet"], ["Beurre", 30, "g", "p"]],
+    steps: ["Gratte et rince les moules ; jette celles qui sont ouvertes.", "Fais fondre les échalotes dans le beurre, ajoute le vin et les moules. Couvre 6 à 8 min en secouant.", "Ajoute la crème et le persil. Sers avec les frites."],
+    d: { level: "Facile", prep: "20 min", cook: "10 min", tools: ["Grande marmite avec couvercle", "Plaque de four pour les frites"], tip: "Jette les moules restées fermées après cuisson.", keep: "À manger aussitôt." } },
+  { id: "cabillaud-poireaux", name: "Cabillaud, fondue de poireaux", icon: "🐟", months: "10-3", t: "p", time: "35 min", serves: 4,
+    ing: [["Cabillaud", 600, "g"], ["Poireaux", 4, "pc"], ["Crème fraîche", 1, "pot"], ["Riz", 300, "g"], ["Citrons", 1, "pc"], ["Beurre", 30, "g", "p"]],
+    steps: ["Émince les poireaux et fais-les fondre 20 min au beurre à couvert.", "Ajoute la crème, puis pose le cabillaud dessus. Couvre et cuis 8 à 10 min.", "Sers avec le riz et un trait de citron."],
+    d: { level: "Facile", prep: "10 min", cook: "30 min", tools: ["Sauteuse avec couvercle", "Casserole"], tip: "Le poisson est cuit quand sa chair se détache en lamelles nacrées.", keep: "1 jour au frigo." } },
+  { id: "saumon-patate-douce", name: "Saumon & purée de patates douces", icon: "🍠", months: "9-12", t: "p", time: "35 min", serves: 4,
+    ing: [["Saumon", 500, "g"], ["Patates douces", 3, "pc"], ["Citrons verts", 1, "pc"], ["Beurre", 30, "g"], ["Coriandre", 1, "botte"]],
+    steps: ["Cuis les patates douces en cubes 15 min à l'eau, puis écrase-les avec le beurre et le jus de citron vert.", "Cuis le saumon 4 min côté peau à la poêle, puis 2 min de l'autre côté.", "Sers sur la purée avec la coriandre."],
+    d: { level: "Facile", prep: "15 min", cook: "20 min", tools: ["Casserole", "Poêle", "Presse-purée"], tip: "Laisse le cœur du saumon légèrement rosé : il reste fondant.", keep: "Purée : 3 jours au frigo." } },
+  { id: "soupe-potiron-coco", name: "Soupe de potiron au lait de coco", icon: "🎃", months: "9-1", t: "e", time: "40 min", serves: 4,
+    ing: [["Potiron", 1, "pc"], ["Lait de coco", 1, "boite"], ["Oignons", 1, "pc"], ["Gingembre", 20, "g"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Fais revenir l'oignon et le gingembre râpé.", "Ajoute 1 kg de potiron en cubes et couvre de bouillon. Cuis 25 min.", "Mixe avec le lait de coco, rectifie l'assaisonnement."],
+    d: { level: "Facile", prep: "15 min", cook: "25 min", tools: ["Cocotte", "Mixeur plongeant", "Râpe"], tip: "Une pointe de curry ou de citronnelle lui donne un air thaï.", keep: "3 jours au frigo, 3 mois au congélateur." } },
+  { id: "flamiche-poireaux", name: "Flamiche aux poireaux", icon: "🥧", months: "10-3", t: "p", time: "1 h", serves: 6,
+    ing: [["Poireaux", 4, "pc"], ["Pâte brisée", 1, "pc"], ["Œufs", 3, "pc"], ["Crème fraîche", 1, "pot"], ["Emmental râpé", 1, "sachet"], ["Beurre", 30, "g", "p"]],
+    steps: ["Émince les poireaux et fais-les fondre 15 min au beurre.", "Bats œufs, crème et fromage, sale et poivre, puis mélange avec les poireaux.", "Verse sur la pâte étalée dans un moule et cuis 35 min à 180 °C."],
+    d: { level: "Facile", prep: "20 min", cook: "50 min", tools: ["Moule à tarte", "Poêle", "Saladier"], tip: "Lave bien les poireaux une fois fendus : la terre se cache entre les feuilles.", keep: "3 jours au frigo ; bonne froide aussi." } },
+  { id: "veloute-brocoli", name: "Velouté de brocoli au chèvre", icon: "🥦", months: "9-11", t: "e", time: "30 min", serves: 4,
+    ing: [["Brocoli", 2, "pc"], ["Pommes de terre", 0.3, "kg"], ["Oignons", 1, "pc"], ["Chèvre", 1, "pc"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Coupe le brocoli en bouquets et les pommes de terre en cubes.", "Fais-les cuire 20 min dans le bouillon avec l'oignon.", "Mixe avec la moitié du chèvre et sers avec le reste émietté."],
+    d: { level: "Facile", prep: "10 min", cook: "20 min", tools: ["Cocotte", "Mixeur plongeant"], tip: "N'oublie pas le pied du brocoli épluché : il est aussi bon que les fleurettes.", keep: "3 jours au frigo." } },
+  { id: "gratin-butternut", name: "Gratin de butternut", icon: "🎃", months: "9-1", t: "p", time: "50 min", serves: 4,
+    ing: [["Courge butternut", 1, "pc"], ["Crème liquide", 1, "brique"], ["Emmental râpé", 1, "sachet"], ["Ail", 1, "pc"], ["Salade", 1, "pc"]],
+    steps: ["Épluche la butternut et coupe-la en fines tranches.", "Range-les dans un plat frotté d'ail, verse la crème salée et poivrée.", "Couvre de fromage et cuis 40 min à 190 °C. Sers avec une salade verte."],
+    d: { level: "Facile", prep: "15 min", cook: "40 min", tools: ["Économe", "Plat à gratin"], tip: "Une pincée de muscade et quelques noisettes concassées sur le dessus, et c'est parfait.", keep: "3 jours au frigo." } },
+  { id: "compote-pommes-coings", name: "Compote pommes-coings", icon: "🍐", months: "10-11", t: "d", time: "45 min", serves: 6,
+    ing: [["Coings", 2, "pc"], ["Pommes", 4, "pc"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Épluche les coings (ils sont durs : prends ton temps) et coupe-les en petits dés.", "Cuis-les 15 min avec un fond d'eau et 50 g de sucre.", "Ajoute les pommes en morceaux et cuis encore 20 min. Écrase ou mixe."],
+    d: { level: "Facile", prep: "20 min", cook: "35 min", tools: ["Casserole", "Économe"], tip: "Garde les épluchures de coing : bouillies et filtrées, elles donnent une gelée.", keep: "5 jours au frigo ; se congèle." } },
+  { id: "salade-kiwis-clementines", name: "Salade kiwis, clémentines & miel", icon: "🥝", months: "12-3", t: "d", time: "10 min", serves: 4,
+    ing: [["Kiwis", 4, "pc"], ["Clémentines", 0.6, "kg"], ["Miel", 1, "pot", "p"], ["Menthe", 1, "botte"]],
+    steps: ["Épluche et coupe les kiwis en rondelles, sépare les quartiers de clémentines.", "Arrose d'un filet de miel et parsème de menthe.", "Laisse 10 min au frais avant de servir."],
+    d: { level: "Facile", prep: "10 min", cook: "aucune", tools: ["Saladier"], tip: "Un kiwi mûr cède légèrement sous le doigt. Trop ferme, laisse-le à côté d'une pomme.", keep: "1 jour au frigo." } },
+  { id: "potee-chou", name: "Potée au chou", icon: "🍲", months: "11-3", t: "p", time: "2 h", serves: 6,
+    ing: [["Chou", 1, "pc"], ["Saucisses", 6, "pc"], ["Lardons", 200, "g"], ["Pommes de terre", 1, "kg"], ["Carottes", 0.5, "kg"], ["Navets", 1, "botte"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Blanchis le chou coupé en quartiers 5 min à l'eau bouillante.", "Fais dorer les lardons dans une grande cocotte, ajoute chou, carottes, navets et 1,5 L de bouillon.", "Laisse mijoter 1 h, puis ajoute pommes de terre et saucisses pour 40 min."],
+    d: { level: "Facile", prep: "25 min", cook: "1 h 40", tools: ["Grande cocotte"], tip: "Blanchir le chou le rend plus digeste et moins fort en goût.", keep: "4 jours au frigo." } },
+  { id: "panais-rotis-miel", name: "Panais & carottes rôtis au miel", icon: "🍯", months: "10-3", t: "p", time: "45 min", serves: 4,
+    ing: [["Panais", 4, "pc"], ["Carottes", 0.5, "kg"], ["Miel", 1, "pot", "p"], ["Huile d'olive", 1, "bouteille", "p"], ["Feta", 1, "pc"], ["Semoule", 250, "g"]],
+    steps: ["Coupe panais et carottes en bâtonnets.", "Mélange avec 2 cuillères d'huile, 1 de miel, du sel, et rôtis 35 min à 200 °C.", "Sers sur la semoule avec la feta émiettée."],
+    d: { level: "Facile", prep: "15 min", cook: "35 min", tools: ["Plaque de four", "Papier cuisson"], tip: "Ne surcharge pas la plaque : les légumes doivent rôtir, pas cuire à la vapeur.", keep: "3 jours au frigo." } },
+  { id: "poulet-champignons-creme", name: "Poulet aux champignons à la crème", icon: "🍄", months: "9-11", t: "p", time: "35 min", serves: 4,
+    ing: [["Escalopes de dinde", 4, "pc"], ["Champignons", 400, "g"], ["Échalotes", 2, "pc"], ["Crème fraîche", 1, "pot"], ["Pâtes", 1, "paquet"], ["Persil", 1, "botte"]],
+    steps: ["Coupe la volaille en lanières et fais-la dorer, puis réserve.", "Fais revenir échalotes et champignons émincés 10 min.", "Remets la viande, ajoute la crème et laisse réduire 5 min. Sers avec les pâtes et le persil."],
+    d: { level: "Facile", prep: "10 min", cook: "25 min", tools: ["Sauteuse", "Casserole"], tip: "Ne lave pas les champignons à grande eau : essuie-les, ils resteront fermes.", keep: "2 jours au frigo." } },
+  { id: "huitres-pain-seigle", name: "Huîtres, pain beurré & citron", icon: "🦪", months: "9-4", t: "e", time: "20 min", serves: 4,
+    ing: [["Huîtres", 2, "douzaine"], ["Citrons", 2, "pc"], ["Pain de campagne", 1, "pc"], ["Beurre", 1, "pc"], ["Échalotes", 2, "pc"], ["Vinaigre", 1, "bouteille", "p"]],
+    steps: ["Ouvre les huîtres avec un couteau à huîtres et un torchon pour protéger ta main.", "Prépare une sauce mignonnette : échalotes très finement hachées dans du vinaigre.", "Sers sur de la glace avec citron, pain beurré et mignonnette."],
+    d: { level: "Moyen", prep: "20 min", cook: "aucune", tools: ["Couteau à huîtres", "Torchon épais"], tip: "Jette la première eau de l'huître : elle en refait une, plus fine, en quelques minutes.", keep: "Fermées, 1 semaine au frais, à plat et sous un poids." } },
+
+  // ===== printemps =====
+  { id: "radis-beurre", name: "Radis, beurre & fleur de sel", icon: "🌱", months: "3-6", t: "e", time: "5 min", serves: 4,
+    ing: [["Radis", 2, "botte"], ["Beurre", 1, "pc"], ["Baguette", 1, "pc"], ["Sel", 1, "paquet", "p"]],
+    steps: ["Lave les radis en gardant un peu de fanes.", "Sers-les avec du beurre demi-sel, du pain et de la fleur de sel."],
+    d: { level: "Facile", prep: "5 min", cook: "aucune", tools: ["Planche"], tip: "Les fanes ne se jettent pas : elles font un excellent pesto ou une soupe.", keep: "Radis : 3 jours au frigo, fanes coupées." } },
+  { id: "tarte-asperges-chevre", name: "Tarte asperges & chèvre", icon: "🥧", months: "4-6", t: "p", time: "50 min", serves: 6,
+    ing: [["Asperges", 1, "botte"], ["Pâte feuilletée", 1, "pc"], ["Chèvre", 1, "pc"], ["Œufs", 3, "pc"], ["Crème fraîche", 1, "pot"], ["Roquette", 1, "sachet"]],
+    steps: ["Épluche les asperges et cuis-les 6 min à l'eau salée.", "Étale la pâte, garnis d'asperges et de rondelles de chèvre.", "Verse œufs et crème battus, cuis 30 min à 190 °C. Sers avec la roquette."],
+    d: { level: "Facile", prep: "20 min", cook: "35 min", tools: ["Moule à tarte", "Casserole", "Économe"], tip: "Les asperges vertes n'ont presque pas besoin d'être épluchées, contrairement aux blanches.", keep: "2 jours au frigo." } },
+  { id: "feves-chorizo", name: "Poêlée de fèves au chorizo", icon: "🫛", months: "5-7", t: "e", time: "30 min", serves: 4,
+    ing: [["Fèves", 1000, "g"], ["Chorizo", 1, "pc"], ["Oignons rouges", 1, "pc"], ["Menthe", 1, "botte"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Écosse les fèves, plonge-les 2 min dans l'eau bouillante puis retire leur peau.", "Fais revenir l'oignon et le chorizo en dés.", "Ajoute les fèves 5 min, puis la menthe ciselée."],
+    d: { level: "Facile", prep: "20 min", cook: "10 min", tools: ["Casserole", "Poêle"], tip: "Compte 1 kg de cosses pour environ 300 g de fèves écossées.", keep: "2 jours au frigo." } },
+  { id: "veloute-cresson", name: "Velouté de cresson", icon: "🌿", months: "3-5", t: "e", time: "30 min", serves: 4,
+    ing: [["Cresson", 2, "botte"], ["Pommes de terre", 0.4, "kg"], ["Oignons", 1, "pc"], ["Crème fraîche", 1, "pot"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Cuis pommes de terre et oignon 15 min dans le bouillon.", "Ajoute le cresson lavé (tiges comprises) pour 5 min seulement.", "Mixe avec la crème."],
+    d: { level: "Facile", prep: "10 min", cook: "20 min", tools: ["Cocotte", "Mixeur plongeant"], tip: "Cuis le cresson très peu de temps : il garde sa couleur vert vif et son piquant.", keep: "2 jours au frigo." } },
+  { id: "poulet-printanier", name: "Poulet, carottes nouvelles & petits pois", icon: "🍗", months: "4-6", t: "p", time: "50 min", serves: 4,
+    ing: [["Cuisses de poulet", 4, "pc"], ["Carottes", 0.5, "kg"], ["Petits pois", 500, "g"], ["Oignons", 1, "pc"], ["Lardons", 100, "g"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Fais dorer le poulet dans une cocotte, puis ajoute oignon et lardons.", "Ajoute les carottes et un verre de bouillon, couvre 30 min.", "Ajoute les petits pois écossés pour 10 min."],
+    d: { level: "Facile", prep: "20 min", cook: "40 min", tools: ["Cocotte"], tip: "Les carottes nouvelles se brossent simplement, inutile de les éplucher.", keep: "3 jours au frigo." } },
+  { id: "saumon-epinards", name: "Saumon aux épinards à la crème", icon: "🐟", months: "3-5,9-11", t: "p", time: "30 min", serves: 4,
+    ing: [["Saumon", 500, "g"], ["Épinards", 500, "g"], ["Crème fraîche", 1, "pot"], ["Ail", 1, "pc"], ["Pâtes", 1, "paquet"], ["Citrons", 1, "pc"]],
+    steps: ["Fais tomber les épinards avec l'ail haché, ajoute la crème.", "Cuis le saumon à la poêle 6 min.", "Sers avec les pâtes, la sauce aux épinards et un zeste de citron."],
+    d: { level: "Facile", prep: "10 min", cook: "20 min", tools: ["Sauteuse", "Poêle", "Casserole"], tip: "500 g d'épinards frais réduisent à une poignée : n'aie pas peur de la quantité.", keep: "1 jour au frigo." } },
+  { id: "verrines-fraises", name: "Verrines fraises & fromage blanc", icon: "🍓", months: "5-7", t: "d", time: "15 min", serves: 4,
+    ing: [["Fraises", 2, "barquette"], ["Fromage blanc", 1, "pot"], ["Biscuits", 1, "paquet"], ["Sucre vanillé", 1, "sachet"]],
+    steps: ["Émiette les biscuits au fond de 4 verres.", "Mélange le fromage blanc avec le sucre vanillé.", "Alterne fromage blanc et fraises coupées. Garde au frais."],
+    d: { level: "Facile", prep: "15 min", cook: "aucune", tools: ["4 verres", "Saladier"], tip: "Des sablés bretons émiettés, c'est encore meilleur que des biscuits classiques.", keep: "1 jour au frigo (les biscuits ramollissent)." } },
+  { id: "crumble-rhubarbe-fraises", name: "Crumble rhubarbe-fraises", icon: "🍓", months: "5-6", t: "d", time: "50 min", serves: 6,
+    ing: [["Rhubarbe", 1, "botte"], ["Fraises", 1, "barquette"], ["Farine", 0.15, "kg"], ["Beurre", 100, "g"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Coupe rhubarbe et fraises dans un plat, saupoudre de 40 g de sucre.", "Sable farine, 100 g de sucre et beurre froid du bout des doigts.", "Couvre les fruits et cuis 35 min à 180 °C."],
+    d: { level: "Facile", prep: "15 min", cook: "35 min", tools: ["Plat à gratin", "Saladier"], tip: "La fraise adoucit l'acidité de la rhubarbe : moins besoin de sucre.", keep: "2 jours à température ambiante." } },
+  { id: "omelette-fines-herbes", name: "Omelette aux fines herbes", icon: "🍳", months: "3-10", t: "p", time: "10 min", serves: 2,
+    ing: [["Œufs", 6, "pc"], ["Ciboulette", 1, "botte"], ["Persil", 1, "botte"], ["Salade", 1, "pc"], ["Beurre", 20, "g", "p"]],
+    steps: ["Bats les œufs avec les herbes ciselées, sel et poivre.", "Verse dans une poêle beurrée bien chaude, ramène les bords vers le centre.", "Plie l'omelette encore baveuse et sers avec la salade."],
+    d: { level: "Facile", prep: "5 min", cook: "5 min", tools: ["Poêle", "Fourchette"], tip: "Sors-la du feu un peu avant qu'elle te paraisse cuite : elle finit de cuire dans l'assiette.", keep: "À manger aussitôt." } },
+  { id: "artichauts-vinaigrette", name: "Artichauts vinaigrette", icon: "🌼", months: "5-9", t: "e", time: "45 min", serves: 4,
+    ing: [["Artichauts", 4, "pc"], ["Citrons", 1, "pc"], ["Moutarde", 1, "pot", "p"], ["Vinaigre", 1, "bouteille", "p"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Casse la queue des artichauts et cuis-les 30 à 40 min à l'eau salée citronnée.", "Ils sont cuits quand une feuille se détache facilement.", "Sers tièdes avec une vinaigrette moutardée."],
+    d: { level: "Facile", prep: "5 min", cook: "40 min", tools: ["Grande marmite"], tip: "Égoutte-les tête en bas pour qu'ils ne gardent pas d'eau.", keep: "2 jours au frigo." } },
+  { id: "salade-pdt-nouvelles", name: "Salade de pommes de terre nouvelles", icon: "🥔", months: "4-7", t: "e", time: "25 min", serves: 4,
+    ing: [["Pommes de terre", 0.8, "kg"], ["Radis", 1, "botte"], ["Ciboulette", 1, "botte"], ["Œufs", 4, "pc"], ["Moutarde", 1, "pot", "p"], ["Vinaigre", 1, "bouteille", "p"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Cuis les pommes de terre nouvelles 15 min avec leur peau, et les œufs 9 min.", "Coupe-les tièdes avec les radis en rondelles.", "Assaisonne d'une vinaigrette moutardée et de ciboulette."],
+    d: { level: "Facile", prep: "15 min", cook: "15 min", tools: ["Deux casseroles", "Saladier"], tip: "Assaisonne les pommes de terre encore tièdes : elles absorbent mieux la vinaigrette.", keep: "2 jours au frigo." } },
+
+  // ===== été =====
+  { id: "salade-grecque", name: "Salade grecque", icon: "🫒", months: "6-9", t: "e", time: "15 min", serves: 4,
+    ing: [["Tomates", 600, "g"], ["Concombre", 1, "pc"], ["Feta", 1, "pc"], ["Olives", 1, "bocal"], ["Oignons rouges", 1, "pc"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Coupe tomates et concombre en gros morceaux, l'oignon en fines lamelles.", "Ajoute les olives et la feta en bloc ou en cubes.", "Arrose d'huile d'olive et d'une pincée d'origan."],
+    d: { level: "Facile", prep: "15 min", cook: "aucune", tools: ["Saladier"], tip: "Ne sale presque pas : la feta et les olives le sont déjà.", keep: "À servir aussitôt." } },
+  { id: "brochettes-poulet", name: "Brochettes poulet-poivrons", icon: "🍢", months: "6-9", t: "p", time: "40 min", serves: 4,
+    ing: [["Poulet", 600, "g"], ["Poivrons", 2, "pc"], ["Oignons rouges", 2, "pc"], ["Citrons", 1, "pc"], ["Riz", 300, "g"], ["Huile d'olive", 1, "bouteille", "p"], ["Épices", 1, "pot", "p"]],
+    steps: ["Coupe le poulet en cubes et fais-le mariner 20 min avec huile, citron et épices.", "Pique en alternant avec poivrons et oignons.", "Cuis 12 à 15 min au barbecue ou à la plancha en tournant. Sers avec le riz."],
+    d: { level: "Facile", prep: "25 min", cook: "15 min", tools: ["Piques à brochettes", "Barbecue ou plancha"], tip: "Fais tremper les piques en bois 30 min dans l'eau : elles ne brûleront pas.", keep: "2 jours au frigo." } },
+  { id: "tian-legumes", name: "Tian de légumes provençal", icon: "🍅", months: "6-9", t: "p", time: "1 h 15", serves: 4,
+    ing: [["Courgettes", 2, "pc"], ["Aubergine", 1, "pc"], ["Tomates", 500, "g"], ["Oignons", 1, "pc"], ["Ail", 1, "pc"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Coupe tous les légumes en rondelles fines de même épaisseur.", "Range-les en les alternant debout dans un plat, sur l'oignon émincé.", "Arrose d'huile, ajoute ail et herbes, et cuis 1 h à 180 °C."],
+    d: { level: "Facile", prep: "20 min", cook: "1 h", tools: ["Plat à gratin", "Mandoline ou couteau"], tip: "Choisis des légumes de même diamètre pour un tian bien régulier.", keep: "3 jours au frigo ; bon froid." } },
+  { id: "courgettes-farcies", name: "Courgettes farcies", icon: "🥒", months: "6-9", t: "p", time: "1 h", serves: 4,
+    ing: [["Courgettes", 4, "pc"], ["Viande hachée", 400, "g"], ["Oignons", 1, "pc"], ["Parmesan", 50, "g"], ["Riz", 200, "g"]],
+    steps: ["Coupe les courgettes en deux et creuse-les ; hache la chair.", "Fais revenir oignon, viande et chair de courgette 10 min.", "Remplis les courgettes, parsème de parmesan et cuis 35 min à 180 °C. Sers avec le riz."],
+    d: { level: "Facile", prep: "20 min", cook: "45 min", tools: ["Cuillère à pomme parisienne ou petite cuillère", "Poêle", "Plat à four"], tip: "Les courgettes rondes de Nice sont parfaites pour cette recette.", keep: "3 jours au frigo." } },
+  { id: "salade-pasteque-feta", name: "Salade pastèque, feta & menthe", icon: "🍉", months: "7-9", t: "e", time: "10 min", serves: 4,
+    ing: [["Pastèque", 1, "pc"], ["Feta", 1, "pc"], ["Menthe", 1, "botte"], ["Citrons verts", 1, "pc"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Coupe la pastèque en cubes et retire les pépins.", "Ajoute la feta émiettée et la menthe ciselée.", "Arrose de citron vert et d'un filet d'huile."],
+    d: { level: "Facile", prep: "10 min", cook: "aucune", tools: ["Saladier"], tip: "Une pastèque mûre sonne creux et a une tache jaune là où elle reposait au sol.", keep: "À servir bien frais, aussitôt." } },
+  { id: "pates-pesto-haricots", name: "Pâtes au pesto & haricots verts", icon: "🍝", months: "6-9", t: "p", time: "20 min", serves: 4,
+    ing: [["Pâtes", 1, "paquet"], ["Haricots verts", 300, "g"], ["Pesto", 1, "pot"], ["Pommes de terre", 0.3, "kg"], ["Parmesan", 50, "g"]],
+    steps: ["Cuis les pâtes avec les pommes de terre en petits dés et les haricots coupés, dans la même eau.", "Égoutte en gardant une louche d'eau de cuisson.", "Mélange avec le pesto, l'eau réservée et le parmesan."],
+    d: { level: "Facile", prep: "10 min", cook: "12 min", tools: ["Grande casserole", "Passoire"], tip: "C'est la recette ligure traditionnelle : la pomme de terre rend la sauce crémeuse.", keep: "2 jours au frigo ; bon en salade froide." } },
+  { id: "aubergines-parmigiana", name: "Aubergines à la parmigiana", icon: "🍆", months: "7-9", t: "p", time: "1 h 15", serves: 4,
+    ing: [["Aubergine", 3, "pc"], ["Sauce tomate", 1, "bocal"], ["Mozzarella", 2, "pc"], ["Parmesan", 80, "g"], ["Basilic", 1, "pot"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Coupe les aubergines en tranches, badigeonne-les d'huile et rôtis-les 20 min à 200 °C.", "Dans un plat, alterne aubergines, sauce tomate, mozzarella, basilic et parmesan.", "Termine par le parmesan et cuis 35 min à 180 °C."],
+    d: { level: "Moyen", prep: "20 min", cook: "55 min", tools: ["Plaques de four", "Plat à gratin"], tip: "Rôtir les aubergines au four plutôt qu'à la poêle évite qu'elles boivent toute l'huile.", keep: "3 jours au frigo ; meilleur le lendemain." } },
+  { id: "tarte-abricots", name: "Tarte aux abricots", icon: "🍑", months: "6-8", t: "d", time: "50 min", serves: 6,
+    ing: [["Abricots", 800, "g"], ["Pâte brisée", 1, "pc"], ["Amandes", 1, "sachet"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Étale la pâte dans un moule et saupoudre-la de 2 cuillères de poudre d'amande.", "Range les demi-abricots serrés, face bombée vers le bas.", "Saupoudre de sucre et cuis 40 min à 190 °C."],
+    d: { level: "Facile", prep: "15 min", cook: "40 min", tools: ["Moule à tarte"], tip: "La poudre d'amande absorbe le jus des fruits : la pâte reste croustillante.", keep: "2 jours à température ambiante." } },
+  { id: "salade-fruits-ete", name: "Salade de fruits d'été", icon: "🍑", months: "6-8", t: "d", time: "15 min", serves: 4,
+    ing: [["Pêches", 2, "pc"], ["Nectarines", 2, "pc"], ["Melon", 1, "pc"], ["Framboises", 1, "barquette"], ["Menthe", 1, "botte"]],
+    steps: ["Coupe pêches, nectarines et melon en morceaux.", "Ajoute les framboises et la menthe ciselée.", "Laisse 30 min au frais avant de servir."],
+    d: { level: "Facile", prep: "15 min", cook: "aucune", tools: ["Saladier"], tip: "Un trait de jus de citron empêche les fruits de noircir.", keep: "1 jour au frigo." } },
+  { id: "tarte-mirabelles", name: "Tarte aux mirabelles", icon: "🟡", months: "8-9", t: "d", time: "50 min", serves: 6,
+    ing: [["Mirabelles", 700, "g"], ["Pâte brisée", 1, "pc"], ["Œufs", 2, "pc"], ["Crème fraîche", 1, "pot"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Dénoyaute les mirabelles et range-les sur la pâte étalée.", "Bats œufs, crème et 60 g de sucre.", "Verse sur les fruits et cuis 40 min à 180 °C."],
+    d: { level: "Facile", prep: "20 min", cook: "40 min", tools: ["Moule à tarte", "Fouet"], tip: "La mirabelle de Lorraine n'a une vraie saison que de 6 semaines : profites-en !", keep: "2 jours au frigo." } },
+  { id: "crumble-prunes", name: "Crumble aux prunes", icon: "🫐", months: "8-9", t: "d", time: "45 min", serves: 6,
+    ing: [["Prunes", 800, "g"], ["Farine", 0.15, "kg"], ["Beurre", 100, "g"], ["Flocons d'avoine", 1, "paquet"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Dénoyaute les prunes et coupe-les en quartiers dans un plat.", "Sable farine, 50 g de flocons, 100 g de sucre et le beurre.", "Couvre les fruits et cuis 30 min à 180 °C."],
+    d: { level: "Facile", prep: "15 min", cook: "30 min", tools: ["Plat à gratin", "Saladier"], tip: "Une pincée de cannelle sur les prunes, et c'est l'automne avant l'heure.", keep: "2 jours à température ambiante." } },
+  { id: "salade-nicoise", name: "Salade niçoise", icon: "🥗", months: "6-9", t: "p", time: "25 min", serves: 4,
+    ing: [["Tomates", 500, "g"], ["Thon", 2, "boite"], ["Œufs", 4, "pc"], ["Haricots verts", 200, "g"], ["Olives", 1, "bocal"], ["Salade", 1, "pc"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Cuis les œufs 9 min et les haricots verts 8 min.", "Dispose salade, tomates en quartiers, haricots, thon, olives et œufs.", "Arrose d'huile d'olive et d'un peu de vinaigre."],
+    d: { level: "Facile", prep: "15 min", cook: "10 min", tools: ["Casserole", "Grand plat"], tip: "Plonge les haricots dans l'eau glacée après cuisson : ils restent verts et croquants.", keep: "1 jour au frigo, sans assaisonnement." } },
+  { id: "mais-grille", name: "Épis de maïs grillés & beurre citronné", icon: "🌽", months: "8-10", t: "e", time: "25 min", serves: 4,
+    ing: [["Maïs", 4, "pc"], ["Beurre", 60, "g"], ["Citrons verts", 1, "pc"], ["Piments", 1, "pc"]],
+    steps: ["Précuis les épis 10 min à l'eau bouillante.", "Grille-les 10 min au barbecue ou à la poêle en les tournant.", "Badigeonne de beurre mélangé au zeste de citron vert et au piment."],
+    d: { level: "Facile", prep: "5 min", cook: "20 min", tools: ["Casserole", "Barbecue ou poêle-gril"], tip: "Choisis des épis aux feuilles bien vertes et aux grains qui laissent sortir un jus laiteux.", keep: "2 jours au frigo." } },
+
+  // ===== toute l'année =====
+  { id: "bolognaise", name: "Spaghetti bolognaise", icon: "🍝", months: "1-12", t: "p", time: "50 min", serves: 4,
+    ing: [["Pâtes", 1, "paquet"], ["Viande hachée", 400, "g"], ["Sauce tomate", 1, "bocal"], ["Oignons", 1, "pc"], ["Carottes", 0.2, "kg"], ["Parmesan", 50, "g"]],
+    steps: ["Fais revenir oignon et carotte finement hachés.", "Ajoute la viande, laisse dorer, puis la sauce tomate. Laisse mijoter 30 min.", "Sers sur les pâtes avec le parmesan."],
+    d: { level: "Facile", prep: "15 min", cook: "35 min", tools: ["Sauteuse", "Grande casserole"], tip: "Plus elle mijote, meilleure elle est : double les quantités et congèle la moitié.", keep: "4 jours au frigo ; se congèle." } },
+  { id: "chili-con-carne", name: "Chili con carne", icon: "🌶️", months: "1-12", t: "p", time: "1 h", serves: 4,
+    ing: [["Viande hachée", 500, "g"], ["Haricots rouges", 2, "boite"], ["Sauce tomate", 1, "bocal"], ["Poivrons", 1, "pc"], ["Oignons", 1, "pc"], ["Riz", 300, "g"], ["Épices", 1, "pot", "p"]],
+    steps: ["Fais revenir oignon et poivron, puis la viande avec 2 cuillères de cumin et de paprika.", "Ajoute la sauce tomate et les haricots égouttés, laisse mijoter 40 min.", "Sers avec le riz."],
+    d: { level: "Facile", prep: "15 min", cook: "45 min", tools: ["Cocotte", "Casserole"], tip: "Un carré de chocolat noir dans la sauce : c'est le secret mexicain.", keep: "4 jours au frigo ; se congèle." } },
+  { id: "curry-pois-chiches", name: "Curry de pois chiches & épinards", icon: "🍛", months: "1-12", t: "p", time: "30 min", serves: 4,
+    ing: [["Pois chiches", 2, "boite"], ["Lait de coco", 1, "boite"], ["Sauce tomate", 1, "bocal"], ["Épinards", 200, "g"], ["Oignons", 1, "pc"], ["Riz", 300, "g"], ["Épices", 1, "pot", "p"]],
+    steps: ["Fais revenir l'oignon avec 2 cuillères de curry.", "Ajoute pois chiches, sauce tomate et lait de coco, laisse mijoter 15 min.", "Ajoute les épinards 2 min avant la fin. Sers avec le riz."],
+    d: { level: "Facile", prep: "10 min", cook: "20 min", tools: ["Sauteuse", "Casserole"], tip: "Ajoute le jus d'un citron vert juste avant de servir pour réveiller les épices.", keep: "4 jours au frigo ; se congèle." } },
+  { id: "carbonara", name: "Pâtes carbonara", icon: "🥓", months: "1-12", t: "p", time: "20 min", serves: 4,
+    ing: [["Pâtes", 1, "paquet"], ["Lardons", 200, "g"], ["Œufs", 4, "pc"], ["Parmesan", 80, "g"], ["Poivre", 1, "pot", "p"]],
+    steps: ["Cuis les pâtes ; fais dorer les lardons à sec.", "Bats les jaunes d'œufs avec le parmesan et beaucoup de poivre.", "Hors du feu, mélange pâtes, lardons et œufs avec un peu d'eau de cuisson pour obtenir une sauce crémeuse."],
+    d: { level: "Facile", prep: "5 min", cook: "15 min", tools: ["Grande casserole", "Poêle", "Bol"], tip: "Jamais de crème dans la vraie carbonara : c'est l'eau de cuisson qui lie la sauce.", keep: "À manger aussitôt." } },
+  { id: "riz-cantonais", name: "Riz cantonais", icon: "🍚", months: "1-12", t: "p", time: "25 min", serves: 4,
+    ing: [["Riz", 300, "g"], ["Œufs", 3, "pc"], ["Jambon", 4, "tranche"], ["Petits pois", 200, "g"], ["Crevettes", 200, "g"], ["Sauce soja", 1, "bouteille", "p"]],
+    steps: ["Cuis le riz (idéalement la veille) et laisse-le refroidir.", "Fais une omelette fine, coupe-la en lanières.", "Fais sauter riz, petits pois, jambon et crevettes au wok, puis ajoute l'omelette et la sauce soja."],
+    d: { level: "Facile", prep: "15 min", cook: "15 min", tools: ["Wok ou grande poêle", "Casserole"], tip: "Le riz de la veille donne des grains bien séparés.", keep: "2 jours au frigo." } },
+  { id: "croque-monsieur", name: "Croque-monsieur & salade", icon: "🥪", months: "1-12", t: "p", time: "20 min", serves: 4,
+    ing: [["Pain de mie", 1, "paquet"], ["Jambon", 4, "tranche"], ["Emmental râpé", 1, "sachet"], ["Beurre", 40, "g"], ["Salade", 1, "pc"]],
+    steps: ["Beurre 8 tranches de pain de mie.", "Garnis 4 tranches de jambon et de fromage, referme et couvre d'un peu de fromage.", "Dore 10 min à 220 °C ou à la poêle. Sers avec la salade."],
+    d: { level: "Facile", prep: "10 min", cook: "10 min", tools: ["Plaque de four ou poêle"], tip: "Une cuillère de béchamel sur le dessus et tu obtiens un croque façon brasserie.", keep: "À manger aussitôt." } },
+  { id: "gateau-yaourt", name: "Gâteau au yaourt", icon: "🍰", months: "1-12", t: "d", time: "45 min", serves: 6,
+    ing: [["Yaourts", 1, "pack"], ["Farine", 0.25, "kg"], ["Œufs", 3, "pc"], ["Levure", 1, "sachet"], ["Huile de tournesol", 1, "bouteille", "p"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Le pot de yaourt sert de mesure : 1 yaourt, 2 pots de sucre, 3 pots de farine, ½ pot d'huile.", "Mélange tout avec les œufs et la levure.", "Cuis 35 min à 180 °C dans un moule beurré."],
+    d: { level: "Facile", prep: "10 min", cook: "35 min", tools: ["Saladier", "Moule à cake ou rond"], tip: "La recette parfaite à faire avec des enfants : tout se mesure au pot.", keep: "3 jours sous cloche." } },
+  { id: "mousse-chocolat", name: "Mousse au chocolat", icon: "🍫", months: "1-12", t: "d", time: "20 min", serves: 6,
+    ing: [["Chocolat", 1, "tablette"], ["Œufs", 6, "pc"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Fais fondre 200 g de chocolat noir au bain-marie.", "Hors du feu, ajoute les jaunes d'œufs un à un.", "Monte les blancs en neige ferme avec une pincée de sucre, incorpore-les délicatement. Laisse prendre 3 h au frigo."],
+    d: { level: "Facile", prep: "20 min (+ 3 h au frais)", cook: "aucune", tools: ["Batteur", "Deux saladiers", "Maryse"], tip: "Incorpore d'abord un tiers des blancs franchement pour détendre le chocolat, puis le reste tout doucement.", keep: "2 jours au frigo." } },
+  { id: "wok-nouilles", name: "Wok de nouilles aux légumes", icon: "🍜", months: "1-12", t: "p", time: "25 min", serves: 4,
+    ing: [["Nouilles", 1, "paquet"], ["Poulet", 400, "g"], ["Carottes", 0.2, "kg"], ["Poivrons", 1, "pc"], ["Gingembre", 20, "g"], ["Sauce soja", 1, "bouteille", "p"]],
+    steps: ["Cuis les nouilles et égoutte-les.", "Fais sauter le poulet en lanières au wok très chaud, puis les légumes en julienne et le gingembre.", "Ajoute les nouilles et 3 cuillères de sauce soja, mélange 2 min."],
+    d: { level: "Facile", prep: "15 min", cook: "10 min", tools: ["Wok ou grande poêle"], tip: "Prépare tout avant d'allumer le feu : au wok, la cuisson va très vite.", keep: "2 jours au frigo." } }
+  ,
+  // ===== printemps (compléments) =====
+  { id: "quiche-epinards-feta", name: "Quiche épinards & feta", icon: "🥧", months: "3-5,9-11", t: "p", time: "55 min", serves: 6,
+    ing: [["Épinards", 400, "g"], ["Feta", 1, "pc"], ["Pâte brisée", 1, "pc"], ["Œufs", 3, "pc"], ["Crème fraîche", 1, "pot"], ["Salade", 1, "pc"]],
+    steps: ["Fais tomber les épinards à la poêle et presse-les pour retirer l'eau.", "Bats œufs et crème, ajoute épinards et feta émiettée, poivre.", "Verse sur la pâte et cuis 35 min à 180 °C. Sers avec la salade."],
+    d: { level: "Facile", prep: "20 min", cook: "35 min", tools: ["Moule à tarte", "Poêle", "Saladier"], tip: "Presse bien les épinards : trop d'eau détremperait la pâte.", keep: "3 jours au frigo ; bonne froide." } },
+  { id: "porc-carottes-glacees", name: "Côtes de porc & carottes glacées", icon: "🥕", months: "4-6", t: "p", time: "35 min", serves: 4,
+    ing: [["Porc", 600, "g"], ["Carottes", 0.6, "kg"], ["Beurre", 30, "g"], ["Persil", 1, "botte"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Mets les carottes nouvelles dans une sauteuse avec le beurre, une cuillère de sucre et de l'eau à mi-hauteur.", "Cuis à découvert 20 min jusqu'à évaporation : elles deviennent brillantes.", "Pendant ce temps, poêle les côtes de porc 5 min par face. Parsème de persil."],
+    d: { level: "Facile", prep: "10 min", cook: "25 min", tools: ["Sauteuse", "Poêle"], tip: "Sors la viande 20 min avant de la cuire : elle restera plus tendre.", keep: "2 jours au frigo." } },
+  { id: "risotto-asperges", name: "Risotto aux asperges", icon: "🌱", months: "4-6", t: "p", time: "35 min", serves: 4,
+    ing: [["Riz", 300, "g"], ["Asperges", 1, "botte"], ["Oignons", 1, "pc"], ["Parmesan", 80, "g"], ["Vin blanc", 10, "cl"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Coupe les asperges en tronçons, garde les pointes à part.", "Fais revenir oignon et riz, déglace au vin blanc, puis ajoute le bouillon louche par louche.", "Ajoute les tronçons à mi-cuisson et les pointes 5 min avant la fin. Termine au parmesan."],
+    d: { level: "Moyen", prep: "15 min", cook: "25 min", tools: ["Sauteuse", "Casserole pour le bouillon"], tip: "Fais cuire les parures d'asperges dans le bouillon : il prendra leur goût.", keep: "À manger aussitôt." } },
+  { id: "agneau-puree-petits-pois", name: "Côtelettes d'agneau, purée de petits pois", icon: "🍖", months: "4-6", t: "p", time: "35 min", serves: 4,
+    ing: [["Agneau", 800, "g"], ["Petits pois", 600, "g"], ["Menthe", 1, "botte"], ["Beurre", 30, "g"], ["Ail", 1, "pc"]],
+    steps: ["Cuis les petits pois 10 min à l'eau salée, puis mixe-les avec le beurre et la menthe.", "Poêle les côtelettes 3 min par face avec l'ail écrasé.", "Laisse reposer 3 min et sers sur la purée."],
+    d: { level: "Facile", prep: "15 min", cook: "20 min", tools: ["Casserole", "Mixeur", "Poêle"], tip: "L'agneau se mange rosé : la viande reste tendre.", keep: "Purée : 2 jours au frigo." } },
+  { id: "poulet-citron-asperges", name: "Poulet au citron & asperges sautées", icon: "🍋", months: "4-6", t: "p", time: "30 min", serves: 4,
+    ing: [["Poulet", 600, "g"], ["Asperges", 1, "botte"], ["Citrons", 2, "pc"], ["Ail", 1, "pc"], ["Quinoa", 1, "paquet"], ["Huile d'olive", 1, "bouteille", "p"]],
+    steps: ["Cuis le quinoa 12 min.", "Fais dorer le poulet en morceaux avec l'ail, puis ajoute jus et zeste de citron.", "Saute les asperges coupées en biais 6 min à la poêle. Sers le tout ensemble."],
+    d: { level: "Facile", prep: "10 min", cook: "20 min", tools: ["Poêle", "Casserole"], tip: "Zeste le citron avant de le presser, c'est bien plus facile.", keep: "2 jours au frigo." } },
+  { id: "blettes-gratinees", name: "Blettes gratinées", icon: "🥬", months: "6-10", t: "p", time: "45 min", serves: 4,
+    ing: [["Blettes", 1, "botte"], ["Lait", 0.4, "l"], ["Beurre", 30, "g"], ["Emmental râpé", 1, "sachet"], ["Jambon", 4, "tranche"], ["Farine", 1, "kg", "p"]],
+    steps: ["Sépare les côtes et les feuilles ; cuis les côtes en tronçons 10 min, les feuilles 3 min.", "Prépare une béchamel légère (beurre, farine, lait).", "Mélange avec les blettes et le jambon en lanières, couvre de fromage et gratine 20 min à 200 °C."],
+    d: { level: "Facile", prep: "20 min", cook: "30 min", tools: ["Casserole", "Fouet", "Plat à gratin"], tip: "Retire les fils des côtes comme pour la rhubarbe.", keep: "3 jours au frigo." } },
+  { id: "oeufs-mimosa", name: "Œufs mimosa", icon: "🥚", months: "3-6", t: "e", time: "20 min", serves: 4,
+    ing: [["Œufs", 6, "pc"], ["Mayonnaise", 1, "pot"], ["Ciboulette", 1, "botte"], ["Salade", 1, "pc"]],
+    steps: ["Cuis les œufs 10 min, refroidis-les et écale-les.", "Coupe-les en deux, écrase les jaunes avec la mayonnaise.", "Garnis les blancs, saupoudre de ciboulette et sers sur la salade."],
+    d: { level: "Facile", prep: "15 min", cook: "10 min", tools: ["Casserole", "Fourchette"], tip: "Garde un jaune à émietter par-dessus : c'est lui qui fait le « mimosa ».", keep: "1 jour au frigo." } },
+  { id: "veloute-asperges", name: "Velouté d'asperges", icon: "🌱", months: "4-6", t: "e", time: "30 min", serves: 4,
+    ing: [["Asperges", 2, "botte"], ["Pommes de terre", 0.2, "kg"], ["Échalotes", 1, "pc"], ["Crème liquide", 1, "brique"], ["Bouillon", 1, "boite", "p"]],
+    steps: ["Épluche les asperges et coupe-les en tronçons (garde quelques pointes).", "Cuis-les 15 min dans le bouillon avec la pomme de terre et l'échalote.", "Mixe avec la crème et sers avec les pointes poêlées."],
+    d: { level: "Facile", prep: "15 min", cook: "20 min", tools: ["Cocotte", "Mixeur plongeant"], tip: "Les asperges un peu moins belles (moins chères) sont parfaites ici.", keep: "2 jours au frigo." } },
+  { id: "compote-rhubarbe-yaourt", name: "Compote de rhubarbe & yaourt", icon: "🌱", months: "4-6", t: "d", time: "25 min", serves: 4,
+    ing: [["Rhubarbe", 1, "botte"], ["Yaourts", 1, "pack"], ["Biscuits", 1, "paquet"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Épluche la rhubarbe et coupe-la en tronçons.", "Cuis-la 15 min avec 80 g de sucre et un fond d'eau.", "Sers froid sur un yaourt avec des biscuits émiettés."],
+    d: { level: "Facile", prep: "10 min", cook: "15 min", tools: ["Casserole"], tip: "Les feuilles de rhubarbe ne se mangent pas : seules les tiges sont comestibles.", keep: "5 jours au frigo." } },
+  { id: "fraises-chantilly", name: "Fraises chantilly", icon: "🍓", months: "5-7", t: "d", time: "15 min", serves: 4,
+    ing: [["Fraises", 2, "barquette"], ["Crème liquide", 1, "brique"], ["Sucre vanillé", 1, "sachet"]],
+    steps: ["Mets la crème et le saladier au frigo 30 min avant.", "Fouette la crème bien froide jusqu'à ce qu'elle tienne, ajoute le sucre vanillé à la fin.", "Sers avec les fraises coupées."],
+    d: { level: "Facile", prep: "15 min", cook: "aucune", tools: ["Batteur", "Saladier"], tip: "Prends une crème entière à 30 % minimum, sinon elle ne montera pas.", keep: "Chantilly : 1 jour au frigo." } },
+  { id: "tarte-citron", name: "Tarte au citron", icon: "🍋", months: "11-4", t: "d", time: "1 h", serves: 6,
+    ing: [["Citrons", 4, "pc"], ["Pâte brisée", 1, "pc"], ["Œufs", 4, "pc"], ["Beurre", 80, "g"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Cuis la pâte à blanc 20 min à 180 °C, couverte de papier et de poids.", "Fais épaissir à feu doux le jus et le zeste des citrons, 150 g de sucre et les œufs en fouettant sans arrêt.", "Hors du feu, ajoute le beurre en morceaux, verse sur la pâte et laisse prendre 2 h au frais."],
+    d: { level: "Moyen", prep: "20 min (+ 2 h au frais)", cook: "30 min", tools: ["Moule à tarte", "Casserole", "Fouet", "Râpe"], tip: "C'est en hiver que les citrons de Menton et d'Espagne sont les meilleurs.", keep: "2 jours au frigo." } },
+  { id: "banana-bread", name: "Banana bread", icon: "🍌", months: "1-12", t: "d", time: "1 h 10", serves: 8,
+    ing: [["Bananes", 3, "pc"], ["Farine", 0.25, "kg"], ["Œufs", 2, "pc"], ["Beurre", 80, "g"], ["Levure", 1, "sachet"], ["Sucre", 1, "kg", "p"]],
+    steps: ["Écrase les bananes bien mûres à la fourchette.", "Mélange avec les œufs, le beurre fondu et 100 g de sucre, puis la farine et la levure.", "Verse dans un moule à cake et cuis 55 min à 175 °C."],
+    d: { level: "Facile", prep: "15 min", cook: "55 min", tools: ["Moule à cake", "Saladier"], tip: "Plus les bananes sont noires, meilleur est le gâteau : idéal anti-gaspi.", keep: "4 jours bien emballé." } },
+  { id: "wraps-poulet", name: "Wraps poulet & crudités", icon: "🌯", months: "5-9", t: "p", time: "20 min", serves: 4,
+    ing: [["Tortillas", 1, "paquet"], ["Poulet", 400, "g"], ["Salade", 1, "pc"], ["Tomates", 300, "g"], ["Carottes", 0.2, "kg"], ["Fromage blanc", 1, "pot"]],
+    steps: ["Fais dorer le poulet en lanières avec un peu d'épices.", "Prépare une sauce : fromage blanc, sel, poivre, herbes.", "Garnis les tortillas de salade, tomates, carottes râpées et poulet, nappe de sauce et roule."],
+    d: { level: "Facile", prep: "15 min", cook: "8 min", tools: ["Poêle", "Râpe"], tip: "Chauffe les tortillas 10 s à la poêle : elles se plient sans casser.", keep: "À manger aussitôt (ou dans la journée pour un pique-nique)." } }
+
+];
+const TYPE_OF = { "salade-figues-chevre": "e", "soupe-poireaux": "e", "veloute-potimarron": "e", "salade-agrumes": "d", "asperges-oeufs": "e", "fraises-menthe": "d", "tomates-mozza": "e", "taboule": "e", "gaspacho": "e", "melon-jambon": "e", "crumble-pommes-poires": "d", "tarte-rhubarbe": "d", "clafoutis-cerises": "d", "peches-rotis": "d" };
+
+RECIPES.push(...MORE_RECIPES);
+RECIPES.forEach(r => { r.monthList = parseMonths(r.months); r.t = r.t || TYPE_OF[r.id] || "p"; });
 const recipeInSeason = (r, months) => r.monthList.some(m => months.includes(m));
+/* ---------- recettes de la semaine (change chaque lundi, identique pour tout le monde) ---------- */
+const WEEK0 = new Date(2024, 0, 1); // un lundi
+const TYPE_LABEL = { e: "Entrée", p: "Plat", d: "Dessert" };
+function mondayOf(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return x; }
+function weekIndex(d) { return Math.round((mondayOf(d) - WEEK0) / 6048e5); }
+function weekRange(wi) {
+  const a = new Date(WEEK0); a.setDate(a.getDate() + wi * 7);
+  const b = new Date(a); b.setDate(b.getDate() + 6);
+  const f = x => x.getDate() + (x.getDate() === 1 ? "er" : "") + " " + MONTHS[x.getMonth()];
+  return a.getMonth() === b.getMonth() ? `du ${a.getDate()} au ${f(b)}` : `du ${f(a)} au ${f(b)}`;
+}
+function seededShuffle(arr, seed) {
+  let s = (seed * 2654435761) >>> 0;
+  const R = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+// 1 entrée + 5 plats (dont 1 « toute l'année » au plus) + 1 dessert, en évitant la semaine d'avant
+function weekPicks(wi, avoid) {
+  const mid = new Date(WEEK0); mid.setDate(mid.getDate() + wi * 7 + 3);
+  const m = mid.getMonth() + 1;
+  const pool = seededShuffle(RECIPES.filter(r => recipeInSeason(r, [m])), wi + 7);
+  const fresh = r => !(avoid && avoid.has(r.id));
+  const seasonal = r => r.monthList.length < 12;
+  const out = [];
+  const take = (n, test) => {
+    const ordered = pool.filter(r => test(r) && fresh(r)).concat(pool.filter(r => test(r) && !fresh(r)));
+    for (const r of ordered) { if (n <= 0) break; if (!out.includes(r)) { out.push(r); n--; } }
+    return n;
+  };
+  let left = take(1, r => r.t === "e" && seasonal(r));
+  left = take(left, r => r.t === "e");
+  left = take(4, r => r.t === "p" && seasonal(r));
+  take(left + 1, r => r.t === "p");
+  left = take(1, r => r.t === "d" && seasonal(r));
+  take(left, r => r.t === "d");
+  take(7 - out.length, () => true);
+  const order = { e: 0, p: 1, d: 2 };
+  return out.sort((a, b) => order[a.t] - order[b.t]);
+}
+// Chaîne déterministe depuis une semaine de départ fixe : chaque semaine évite les 2 précédentes,
+// et tout le monde obtient la même sélection, quel que soit le jour où l'app est ouverte.
+const WEEK_ANCHOR = weekIndex(new Date(2026, 10, 2));
+const _weekCache = {};
+function picksFor(wi) {
+  if (_weekCache[wi]) return _weekCache[wi];
+  if (wi <= WEEK_ANCHOR) return (_weekCache[wi] = weekPicks(wi));
+  let k = wi;
+  while (k > WEEK_ANCHOR && !_weekCache[k - 1]) k--;
+  for (; k <= wi; k++) {
+    if (_weekCache[k]) continue;
+    const avoid = new Set((_weekCache[k - 1] || []).concat(_weekCache[k - 2] || []).map(r => r.id));
+    _weekCache[k] = weekPicks(k, avoid);
+  }
+  return _weekCache[wi];
+}
+function weeklyRecipes(d = new Date()) { return picksFor(weekIndex(d)); }
+function daysToMonday() { const n = (8 - new Date().getDay()) % 7; return n === 0 ? 7 : n; }
+
 
 function scaleQty(q, unit, factor) {
   const v = q * factor;
@@ -800,28 +1176,36 @@ function recipeCard(r) {
   return `<button class="rcard" data-recipe="${r.id}">
     <span class="rem">${r.icon}</span>
     <span class="rinfo"><b>${esc(r.name)}</b>
-      <span>⏱ ${esc(r.time)} · ${r.ing.filter(i => !i[3]).length} ingrédients${ok && nSeason ? ` · <span class="rs">🌱 ${nSeason} de saison</span>` : ""}</span></span>
+      <span>${TYPE_LABEL[r.t] || "Plat"} · ⏱ ${esc(r.time)}${ok && nSeason ? ` · <span class="rs">🌱 ${nSeason} de saison</span>` : ""}</span></span>
   </button>`;
+}
+function weekHead() {
+  const n = daysToMonday();
+  return `<div class="seasonhead"><b>🍲 Recettes de la semaine</b><br><span style="color:var(--muted)">${weekRange(weekIndex(new Date()))} · 7 idées de saison, renouvelées chaque lundi${n <= 2 ? ` (dans ${n} jour${n > 1 ? "s" : ""})` : ""}.</span></div>`;
 }
 function recipesBlock(compact) {
   const m = nowMonth();
-  const now = RECIPES.filter(r => recipeInSeason(r, [m]));
+  const week = weeklyRecipes();
   if (compact) {
-    return now.length ? `<div class="sectitle">🍲 Idées recettes de saison · ${now.length}</div><div class="rrow">${now.map(recipeCard).join("")}</div>` : "";
+    return week.length ? `<div class="sectitle">🍲 Recettes de la semaine · ${weekRange(weekIndex(new Date()))}</div><div class="rrow">${week.map(recipeCard).join("")}</div>` : "";
   }
-  let html = `<div class="seasonhead"><b>🍲 Recettes de saison</b><br><span style="color:var(--muted)">Choisis une recette : ses ingrédients s'ajoutent à ta liste en un geste.</span></div>`;
-  html += `<div class="sectitle">En ${MONTHS[m - 1]} · ${now.length}</div><div class="rlist">${now.map(recipeCard).join("")}</div>`;
+  let html = weekHead();
+  html += `<div class="rlist">${week.map(recipeCard).join("")}</div>`;
+  const others = RECIPES.filter(r => recipeInSeason(r, [m]) && !week.includes(r));
+  const seasonalOthers = others.filter(r => r.monthList.length < 12), always = others.filter(r => r.monthList.length === 12);
+  if (seasonalOthers.length) html += `<div class="sectitle" style="margin-top:16px">Aussi de saison en ${MONTHS[m - 1]} · ${seasonalOthers.length}</div><div class="rlist">${seasonalOthers.map(recipeCard).join("")}</div>`;
+  if (always.length) html += `<div class="sectitle" style="margin-top:16px">Toute l'année · ${always.length}</div><div class="rlist">${always.map(recipeCard).join("")}</div>`;
   const cur = curSeason();
   const order = SEASONS.slice(SEASONS.indexOf(cur) + 1).concat(SEASONS.slice(0, SEASONS.indexOf(cur) + 1));
   order.forEach(x => {
-    const rs = RECIPES.filter(r => !now.includes(r) && recipeInSeason(r, x.months) && !html.includes(`data-recipe="${r.id}"`));
-    if (rs.length) html += `<div class="sectitle" style="margin-top:14px">${x.icon} ${x.label} · ${rs.length}</div><div class="rlist">${rs.map(recipeCard).join("")}</div>`;
+    const rs = RECIPES.filter(r => !recipeInSeason(r, [m]) && recipeInSeason(r, x.months) && !html.includes(`data-recipe="${r.id}"`));
+    if (rs.length) html += `<div class="sectitle" style="margin-top:16px">${x.icon} ${x.label} · ${rs.length}</div><div class="rlist">${rs.map(recipeCard).join("")}</div>`;
   });
   return html;
 }
 function searchRecipes(nq) {
   if (nq.length < 3) return [];
-  if (/^recet/.test(nq)) return RECIPES.filter(r => recipeInSeason(r, [nowMonth()]));
+  if (/^recet/.test(nq) || /^semaine/.test(nq)) return weeklyRecipes();
   return RECIPES.filter(r => norm(r.name).includes(nq) || r.ing.some(i => norm(i[0]).startsWith(nq) && !i[3]))
     .sort((a, b) => recipeInSeason(b, [nowMonth()]) - recipeInSeason(a, [nowMonth()]));
 }
@@ -955,7 +1339,7 @@ async function keepAwake(on) {
 }
 function menuSheet(id) {
   const r = RECIPES.find(x => x.id === id); if (!r) return;
-  const d = RDETAILS[id] || {};
+  const d = RDETAILS[id] || r.d || {};
   const lid = S.cur;
   let serves = (menuOf()[id] && menuOf()[id].serves) || r.serves;
   let done = [];
