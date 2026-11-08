@@ -1,6 +1,12 @@
 [build]
   publish = "public"
 
+# La clé « apiKey » de la config Firebase web est publique par conception (elle identifie le projet,
+# la sécurité est assurée par les règles Firestore et les domaines autorisés).
+# On dit au scanner de secrets Netlify de l'ignorer, et seulement elle.
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyDF6hKnOqaFM2CE06k-83Rgrahm8MKx0Zk"
+
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
