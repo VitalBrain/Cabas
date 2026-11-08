@@ -1,0 +1,9 @@
+{
+  "name": "cabas",
+  "private": true,
+  "description": "Cabas — listes de courses partagées (fonctions Netlify pour les notifications push)",
+  "type": "module",
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

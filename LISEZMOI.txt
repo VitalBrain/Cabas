@@ -10,9 +10,9 @@ A. Firebase (console.firebase.google.com › projet matrice-d-eisenhower-aa8df)
      (ex. cabas-xxx.netlify.app).
 
 B. Netlify
-  Créer un dépôt GitHub (ex. VitalBrain/cabas) avec ces fichiers, puis Netlify ›
-  Add new site › Import from Git, sans commande de build, dossier de publication "/".
-  (Ou glisser ce dossier sur https://app.netlify.com/drop.)
+  Netlify › Add new site › Import from Git › VitalBrain/Cabas.
+  Tout est réglé par netlify.toml : le site est servi depuis public/, et les fonctions
+  (notifications) depuis netlify/functions/. Pas de commande de build à saisir.
 
 C. Installer l'app sur le téléphone
   - Android (Chrome) : ouvrir l'adresse Netlify › bouton « Installer » (bandeau ou icône ⤓ en haut),
@@ -40,4 +40,24 @@ E. Utilisation
   - Fonctionne hors ligne au supermarché : les changements partent au retour du réseau.
 
 Données Firestore : cabas_lists/{liste}/items/{article}, cabas_invites/{code},
-cabas_users/{uid}/meta/catalog (produits, unités et habitudes perso).
+cabas_users/{uid}/meta/catalog (produits, unités et habitudes perso),
+cabas_users/{uid}/meta/push (appareils à notifier, listes coupées).
+
+F. Notifications push (prévenir les autres membres quand un produit est ajouté ou retiré)
+  Gratuit : Firebase Cloud Messaging + 2 fonctions Netlify. Le forfait Firebase gratuit (Spark) suffit.
+  1. Firebase › ⚙️ Paramètres du projet › Cloud Messaging :
+     - vérifier que « API Firebase Cloud Messaging (V1) » est Activée ;
+     - en bas, « Certificats Web Push » › Générer une paire de clés › copier la clé publique.
+  2. Firebase › ⚙️ Paramètres du projet › Comptes de service › « Générer une nouvelle clé privée »
+     › un fichier JSON se télécharge. NE PAS le mettre dans GitHub.
+  3. Netlify › Site configuration › Environment variables › Add a variable :
+     - FIREBASE_VAPID_KEY = la clé publique de l'étape 1
+     - FIREBASE_SERVICE_ACCOUNT = tout le contenu du fichier JSON de l'étape 2
+       (cocher le scope « Functions »)
+  4. Netlify › Deploys › Trigger deploy › Deploy site (pour prendre en compte les variables).
+  Dans l'app : ouvrir une liste partagée › bandeau « Activer » (ou avatar › Notifications).
+  - Android : marche même app fermée.
+  - iPhone (iOS 16.4+) : uniquement si Cabas est installée sur l'écran d'accueil.
+  - Les modifications sont regroupées : une seule notification pour plusieurs produits en quelques secondes.
+  - Couper une liste précise : menu ⋯ de la liste › « Couper les notifications de cette liste ».
+

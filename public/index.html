@@ -1543,6 +1543,7 @@ function remoteStore(user) {
       b.set(F.doc(itemsCol(lid)), Object.assign({}, item, { createdAt: now() }));
       b.update(listRef(lid), { openCount: F.increment(item.checked ? 0 : 1), updatedAt: now() });
       run(b.commit());
+      queueNotify(lid, "add", [item]);
     },
     updateItems(lid, ids, patch, delta) {
       const b = F.writeBatch(db);
@@ -1559,14 +1560,20 @@ function remoteStore(user) {
       updates.forEach(u => b.update(F.doc(itemsCol(lid), u.id), u.patch));
       b.update(listRef(lid), { openCount: F.increment(adds.length), updatedAt: now() });
       run(b.commit());
+      if (adds.length) queueNotify(lid, "add", adds);
     },
     deleteItems(lid, ids, delta) {
+      if (lid === S.cur) queueNotify(lid, "del", S.items.filter(i => ids.includes(i.id) && !i.checked));
       const b = F.writeBatch(db);
       ids.forEach(id => b.delete(F.doc(itemsCol(lid), id)));
       b.update(listRef(lid), delta ? { openCount: F.increment(delta), updatedAt: now() } : { updatedAt: now() });
       run(b.commit());
     },
     setCount(lid, n) { F.updateDoc(listRef(lid), { openCount: n }).catch(() => {}); },
+    watchPush(cb) { return F.onSnapshot(F.doc(db, "cabas_users", uid, "meta", "push"), s => cb(s.exists() ? s.data() : {}), () => cb({})); },
+    savePushToken(key, token) { return F.setDoc(F.doc(db, "cabas_users", uid, "meta", "push"), { tokens: { [key]: { token, at: Date.now(), ua: navigator.userAgent.slice(0, 120) } } }, { merge: true }); },
+    removePushToken(key) { return F.updateDoc(F.doc(db, "cabas_users", uid, "meta", "push"), { ["tokens." + key]: F.deleteField() }).catch(() => {}); },
+    setMuted(lid, on) { return F.setDoc(F.doc(db, "cabas_users", uid, "meta", "push"), { muted: { [lid]: on ? true : F.deleteField() } }, { merge: true }).catch(onWriteError); },
     ensureMe(list) {
       const m = list.members && list.members[uid];
       if (!m || m.name !== me.name || m.photo !== me.photo) F.updateDoc(listRef(list.id), { ["members." + uid]: me }).catch(() => {});
@@ -1614,6 +1621,7 @@ function onWriteError(e) {
 const inViewer = !!(window.claude && typeof window.claude.use === "function");
 const canFirebase = /^https?:$/.test(location.protocol) && !inViewer;
 const params = new URLSearchParams(location.search);
+if (params.get("list")) { S.pendingOpen = params.get("list"); history.replaceState(null, "", location.pathname); }
 if (params.get("join")) { try { sessionStorage.setItem("cabas.join", params.get("join")); } catch (e) {} history.replaceState(null, "", location.pathname); }
 const pendingJoin = () => { try { return sessionStorage.getItem("cabas.join"); } catch (e) { return null; } };
 
@@ -1641,6 +1649,7 @@ async function initFirebase() {
   const [app, au, fs] = await Promise.all([import(SDK + "firebase-app.js"), import(SDK + "firebase-auth.js"), import(SDK + "firebase-firestore.js")]);
   fb = { app, au, fs };
   const a = app.initializeApp(FIREBASE, "cabas");
+  fb.appInst = a;
   auth = au.getAuth(a);
   try { db = fs.initializeFirestore(a, { localCache: fs.persistentLocalCache({ tabManager: fs.persistentMultipleTabManager() }) }); }
   catch (e) { db = fs.getFirestore(a); }
@@ -1668,13 +1677,15 @@ function signInError(e) {
 }
 
 function stopAll() {
-  [S.unsubLists, S.unsubItems, S.unsubCat].forEach(u => { try { u && u(); } catch (e) {} });
-  S.unsubLists = S.unsubItems = S.unsubCat = null;
+  [S.unsubLists, S.unsubItems, S.unsubCat, S.unsubPush].forEach(u => { try { u && u(); } catch (e) {} });
+  S.unsubLists = S.unsubItems = S.unsubCat = S.unsubPush = null;
+  PUSH.data = {};
   S.lists = []; S.items = []; S.cur = null;
 }
 function attachStore(store) {
   stopAll();
   S.store = store;
+  if (store.watchPush) S.unsubPush = store.watchPush(d => { PUSH.data = d || {}; });
   S.unsubCat = store.watchCatalog(c => { S.cat = Object.assign({ products: {}, units: {}, freq: {}, last: {} }, c); if (S.searching) renderSearch(); });
   let first = true;
   S.unsubLists = store.watchLists(lists => {
@@ -1698,6 +1709,7 @@ function startLocal() {
   renderHome();
 }
 function startRemote(user) {
+  setTimeout(() => { if (pushOnHere()) enablePush(false); }, 2500);
   const local = lsGet("cabas.mode") === "local" ? localStore() : null;
   lsSet("cabas.mode", "remote");
   attachStore(remoteStore(user));
@@ -1882,7 +1894,7 @@ function renderItems() {
   const box = $("#listView");
   const open = S.items.filter(i => !i.checked);
   const done = S.items.filter(i => i.checked).sort((a, b) => (b.checkedAt || 0) - (a.checkedAt || 0));
-  const menuHtml = menuBlock();
+  const menuHtml = pushBanner(curList()) + menuBlock();
   if (!S.items.length) {
     box.innerHTML = menuHtml + `<div class="empty"><div class="big">🧺</div><h3>Liste vide</h3>Tape le nom d'un produit dans la barre ci-dessus pour l'ajouter.</div>`;
     return;
@@ -1928,6 +1940,8 @@ function renderItems() {
     const s = e.target.closest("[data-sort]");
     if (s) { S.sort = s.dataset.sort; lsSet("cabas.sort", S.sort); renderItems(); return; }
     if (e.target.closest("[data-act=clear]")) { clearChecked(); return; }
+    if (e.target.closest("[data-act=pushon]")) { enablePush(true).then(() => renderItems()); return; }
+    if (e.target.closest("[data-act=pushno]")) { lsSet("cabas.pushAsk", "no"); renderItems(); toast("Tu pourras les activer depuis ton compte (avatar en haut)"); return; }
     const mc = e.target.closest("[data-menu]");
     if (mc) { menuSheet(mc.dataset.menu); return; }
     const t = e.target.closest(".tile[data-id]"); if (!t) return;
@@ -2279,6 +2293,7 @@ function listMenuSheet() {
       ${S.store.kind === "remote" ? `<button data-act="share"><span class="mi">👥</span>Partager la liste</button>` : ""}
       <button data-act="uncheck" ${nDone ? "" : "disabled style=opacity:.4"}><span class="mi">↩️</span>Tout décocher</button>
       <button data-act="clear" ${nDone ? "" : "disabled style=opacity:.4"}><span class="mi">🧹</span>Retirer les articles cochés</button>
+      ${S.store.kind === "remote" && (l.memberEmails || []).length > 1 ? `<button data-act="mute"><span class="mi">${listMuted(l.id) ? "🔔" : "🔕"}</span>${listMuted(l.id) ? "Réactiver les notifications de cette liste" : "Couper les notifications de cette liste"}</button>` : ""}
       <button data-act="copy"><span class="mi">📋</span>Copier la liste en texte</button>
       ${owner ? `<button class="red" data-act="delete"><span class="mi">🗑️</span>Supprimer la liste</button>` : `<button class="red" data-act="leave"><span class="mi">🚪</span>Quitter la liste</button>`}
     </div>`, sh => {
@@ -2289,6 +2304,12 @@ function listMenuSheet() {
       else if (act === "share") { replaceSheet(shareSheet); }
       else if (act === "uncheck") { const ids = S.items.filter(i => i.checked).map(i => i.id); S.store.updateItems(S.cur, ids, { checked: false, checkedAt: null }, ids.length); closeSheet(); }
       else if (act === "clear") { closeSheet(false, clearChecked); }
+      else if (act === "mute") {
+        const on = !listMuted(l.id);
+        S.store.setMuted(l.id, on); closeSheet();
+        toast(on ? "🔕 Plus de notifications pour cette liste" : "🔔 Notifications réactivées pour cette liste");
+        if (!on && !pushOnHere()) enablePush(true);
+      }
       else if (act === "copy") {
         const lines = S.items.filter(i => !i.checked).map(i => `• ${i.icon} ${i.name}${i.qty ? " — " + fmtQty(i.qty, i.unit, i.unitLabel) : ""}${i.note ? " (" + i.note + ")" : ""}`);
         const txt = `${l.icon || "🛒"} ${l.name}\n` + lines.join("\n");
@@ -2364,6 +2385,7 @@ function accountSheet() {
     <div class="shead">${st.kind === "remote" ? avatar(st.me).replace('class="avatar"', 'class="avatar" style="width:52px;height:52px;font-size:20px"') : '<span class="bigico">👤</span>'}
       <div class="tt"><h3>${esc(st.kind === "remote" ? st.me.name : "Sans compte")}</h3><div class="sub">${esc(st.kind === "remote" ? st.me.email : "Listes enregistrées sur cet appareil")}</div></div></div>
     <div class="menu">
+      ${st.kind === "remote" ? `<button data-act="push"><span class="mi">${pushOnHere() ? "🔔" : "🔕"}</span>Notifications <span style="color:var(--muted);font-weight:400;margin-left:auto;font-size:13px">${pushOnHere() ? "activées" : "désactivées"} sur cet appareil</span></button>` : ""}
       <button data-act="kofi"><span class="mi">☕</span>Soutenir Cabas sur Ko-fi</button>
       <button data-act="catalog"><span class="mi">🏷️</span>Mes produits & unités <span style="color:var(--muted);font-weight:400;margin-left:auto">${nProd + nUnit || ""}</span></button>
       ${!isStandalone() ? `<button data-act="install"><span class="mi">📲</span>Installer l'app</button>` : ""}
@@ -2377,7 +2399,8 @@ function accountSheet() {
       else if (act === "catalog") replaceSheet(catalogSheet);
       else if (act === "install") { replaceSheet(installApp); }
       else if (act === "google") { closeSheet(); signIn(); }
-      else if (act === "out") { closeSheet(); lsSet("cabas.mode", "out"); await fb.au.signOut(auth); }
+      else if (act === "out") { closeSheet(); Object.keys(NQ).forEach(l => flushNotify(l, true)); if (lsGet("cabas.pushKey")) await disablePush(true); lsSet("cabas.mode", "out"); await fb.au.signOut(auth); }
+      else if (act === "push") { closeSheet(); if (pushOnHere()) disablePush(); else enablePush(true); }
       else if (act === "exit") { closeSheet(); stopAll(); S.store = null; lsSet("cabas.mode", "out"); show("scrLogin"); }
     };
   });
@@ -2451,6 +2474,115 @@ function toast(msg, actLabel, act) {
   t.classList.add("on");
   clearTimeout(toastT);
   toastT = setTimeout(() => t.classList.remove("on"), actLabel ? 5000 : 2600);
+}
+
+/* ---------- Notifications push ----------
+   Ajouts / suppressions groupés 8 s puis envoyés à /api/notify (fonction Netlify),
+   qui prévient les autres membres de la liste via Firebase Cloud Messaging. */
+const NQ = {};
+function queueNotify(lid, kind, items) {
+  if (!S.store || S.store.kind !== "remote" || !auth || !auth.currentUser) return;
+  const l = S.lists.find(x => x.id === lid);
+  if (!l || (l.memberEmails || []).length < 2) return;
+  const q = NQ[lid] || (NQ[lid] = { add: [], del: [] });
+  items.forEach(i => { if (i && i.name) q[kind].push(((i.icon || "") + " " + i.name).trim()); });
+  clearTimeout(q.t);
+  q.t = setTimeout(() => flushNotify(lid), 8000);
+}
+async function flushNotify(lid, leaving) {
+  const q = NQ[lid]; if (!q) return;
+  delete NQ[lid]; clearTimeout(q.t);
+  const del = q.del.slice();
+  const add = q.add.filter(n => { const i = del.indexOf(n); if (i >= 0) { del.splice(i, 1); return false; } return true; });
+  if (!add.length && !del.length) return;
+  try {
+    const idToken = await auth.currentUser.getIdToken();
+    await fetch("/api/notify", {
+      method: "POST", keepalive: !!leaving,
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
+      body: JSON.stringify({ listId: lid, added: add.slice(0, 20), removed: del.slice(0, 20), nAdded: add.length, nRemoved: del.length })
+    });
+  } catch (e) { console.warn("notify", e); }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") Object.keys(NQ).forEach(l => flushNotify(l, true));
+});
+
+const PUSH = { cfg: undefined, data: {} };
+const pushSupported = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+const pushOnHere = () => lsGet("cabas.push") === "on" && pushSupported() && Notification.permission === "granted";
+function tokenKey(t) { let h = 5381; for (let i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) >>> 0; return "d" + h.toString(36) + t.length.toString(36); }
+async function pushConfig() {
+  if (PUSH.cfg !== undefined) return PUSH.cfg;
+  try { const r = await fetch("/api/push-config"); PUSH.cfg = r.ok ? await r.json() : null; } catch (e) { PUSH.cfg = null; }
+  return PUSH.cfg;
+}
+async function enablePush(interactive) {
+  if (!S.store || S.store.kind !== "remote") { if (interactive) toast("Connecte-toi avec Google pour recevoir les notifications"); return false; }
+  if (!pushSupported()) {
+    if (interactive) { if (isIOS && !isStandalone()) iosPushHelp(); else toast("Ce navigateur ne gère pas les notifications"); }
+    return false;
+  }
+  const cfg = await pushConfig();
+  if (!cfg || !cfg.vapidKey) { if (interactive) toast("Les notifications ne sont pas encore activées sur le serveur (voir LISEZMOI)"); return false; }
+  let perm = Notification.permission;
+  if (perm === "default" && interactive) perm = await Notification.requestPermission();
+  if (perm !== "granted") { if (interactive) toast(perm === "denied" ? "Notifications bloquées : autorise-les dans les réglages du navigateur" : "Notifications non autorisées"); return false; }
+  try {
+    const m = fb.msg || (fb.msg = await import(SDK + "firebase-messaging.js"));
+    if (!(await m.isSupported())) { if (interactive) toast("Ce navigateur ne gère pas les notifications"); return false; }
+    const reg = await navigator.serviceWorker.ready;
+    const token = await m.getToken(m.getMessaging(fb.appInst), { vapidKey: cfg.vapidKey, serviceWorkerRegistration: reg });
+    if (!token) throw new Error("no-token");
+    const key = tokenKey(token), old = lsGet("cabas.pushKey");
+    if (old && old !== key) S.store.removePushToken(old);
+    await S.store.savePushToken(key, token);
+    lsSet("cabas.pushKey", key); lsSet("cabas.push", "on");
+    if (interactive) toast("🔔 Notifications activées sur cet appareil");
+    return true;
+  } catch (e) {
+    console.error(e);
+    if (interactive) toast("Impossible d'activer les notifications" + (e.code ? " (" + e.code + ")" : ""));
+    return false;
+  }
+}
+async function disablePush(quiet) {
+  const key = lsGet("cabas.pushKey");
+  lsSet("cabas.push", "off");
+  try { if (key && S.store && S.store.removePushToken) await S.store.removePushToken(key); } catch (e) {}
+  try { if (fb && fb.msg && fb.appInst) await fb.msg.deleteToken(fb.msg.getMessaging(fb.appInst)); } catch (e) {}
+  lsSet("cabas.pushKey", null);
+  if (!quiet) toast("🔕 Notifications désactivées sur cet appareil");
+}
+const listMuted = lid => !!(PUSH.data.muted && PUSH.data.muted[lid]);
+function iosPushHelp() {
+  openSheet(`<div class="grab"></div>
+    <div class="shead"><span class="bigico">🔔</span><div class="tt"><h3>Notifications sur iPhone</h3><div class="sub">iOS 16.4 ou plus récent</div></div></div>
+    <p style="color:var(--muted);margin:0 0 6px">Sur iPhone, les notifications ne marchent que si Cabas est installée sur l'écran d'accueil :</p>
+    <div class="menu">
+      <div class="mrow"><span class="em">1️⃣</span><div class="info"><b>Dans Safari, touche Partager</b></div></div>
+      <div class="mrow"><span class="em">2️⃣</span><div class="info"><b>« Sur l'écran d'accueil »</b></div></div>
+      <div class="mrow"><span class="em">3️⃣</span><div class="info"><b>Ouvre Cabas depuis son icône</b><span>puis active les notifications</span></div></div>
+    </div>
+    <div class="sacts"><button class="btn primary" data-act="close">Compris</button></div>`, sh => {
+    sh.onclick = e => { if (e.target.closest("[data-act=close]")) closeSheet(); };
+  });
+}
+function pushBanner(l) {
+  if (!l || S.store.kind !== "remote" || (l.memberEmails || []).length < 2) return "";
+  if (pushOnHere() || lsGet("cabas.pushAsk") === "no") return "";
+  if (!pushSupported() && !isIOS) return "";
+  return `<div class="banner" style="display:flex;align-items:center;gap:10px;margin:2px 0 12px">
+    <span style="font-size:24px">🔔</span><span style="flex:1;font-size:14px"><b>Liste partagée</b><br><span style="color:var(--muted)">Sois prévenu·e quand quelqu'un ajoute ou retire un produit.</span></span>
+    <button class="btn primary" data-act="pushon" style="height:38px;padding:0 12px">Activer</button>
+    <button class="icon-btn" data-act="pushno" aria-label="Plus tard" style="width:28px;height:28px;font-size:15px">✕</button></div>`;
+}
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", e => {
+    const m = e.data || {};
+    if (m.type === "cabas-push") { if (m.listId !== S.cur) toast(`${m.title} · ${m.body}`, "Voir", () => openList(m.listId)); }
+    if (m.type === "cabas-open" && m.listId) { if (S.lists.some(l => l.id === m.listId)) { if (S.cur !== m.listId) openList(m.listId); } else S.pendingOpen = m.listId; }
+  });
 }
 
 /* ---------- PWA ---------- */
