@@ -136,6 +136,9 @@ h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0;letter-spac
 .ptile.inlist{outline:2px solid var(--accent);outline-offset:-2px}
 .ptile .q{position:absolute;top:6px;right:6px}
 .ssn{position:absolute;top:5px;left:7px;font-size:13px}
+.dietbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;width:100%;text-align:left;margin:0 0 12px;padding:8px 10px;border-radius:12px;border:1.5px dashed var(--line);font-size:13px}
+.dietbar span{background:var(--chip);border-radius:20px;padding:3px 10px;font-weight:600}
+.dietbar em{font-style:normal;color:var(--accent);font-weight:600;margin-left:auto}
 .rrow{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 12px;margin:0 -2px;scrollbar-width:none;scroll-snap-type:x mandatory}
 .rrow::-webkit-scrollbar{display:none}
 .rrow .rcard{flex:0 0 78%;max-width:300px;scroll-snap-align:start}
@@ -480,6 +483,8 @@ Baguette|🥖|bo|pc|pain|
 Pain de campagne|🍞|bo|pc||
 Pain de mie|🍞|bo|paquet||
 Pain complet|🍞|bo|pc||
+Pain sans gluten|🍞|bo|pc||
+Tortillas de maïs|🫓|bo|paquet|wrap sans gluten|
 Croissants|🥐|bo|pc|viennoiserie|
 Pains au chocolat|🥐|bo|pc|viennoiserie chocolatine|
 Brioche|🍞|bo|pc|viennoiserie|
@@ -510,6 +515,11 @@ Parmesan|🧀|cr|g|fromage|
 Chèvre|🧀|cr|pc|fromage|
 Raclette|🧀|cr|g|fromage|
 Reblochon|🧀|cr|pc|fromage|
+Margarine|🧈|cr|pc|beurre vegetal|
+Crème végétale|🥛|cr|brique|creme soja avoine vegan|
+Yaourts végétaux|🥣|cr|pack|yaourt soja vegan|
+Fromage végétal|🧀|cr|sachet|fromage vegan rape|
+Pâte sans gluten|🥧|cr|pc|pate tarte|
 Pâte feuilletée|🥧|cr|pc|pate tarte|
 Pâte brisée|🥧|cr|pc|pate tarte|
 Pâte à pizza|🍕|cr|pc|pate|
@@ -537,7 +547,21 @@ Moules|🦪|vp|kg|fruit de mer|7-1
 Huîtres|🦪|vp|douzaine|fruit de mer|9-4
 Surimi|🦀|vp|paquet|poisson|
 Tofu|🍢|vp|pc|vegetarien|
+Tofu fumé|🍢|vp|pc|vegetarien lardons|
+Haché végétal|🌱|vp|g|vegetarien steak soja viande|
+Saucisses végétales|🌱|vp|pc|vegetarien|
+Lardons de dinde|🥓|vp|g|volaille halal|
+Jambon de volaille|🍗|vp|tranche|dinde halal|
+Saucisses de volaille|🌭|vp|pc|halal|
+Bacon de dinde|🥓|vp|tranche|halal|
+Chorizo de volaille|🌭|vp|pc|halal boeuf|
+Bresaola|🥩|vp|tranche|viande des grisons boeuf seche|
 Pâtes|🍝|es|paquet|spaghetti penne|
+Pâtes sans gluten|🍝|es|paquet|spaghetti|
+Farine sans gluten|🌾|es|kg|riz|
+Nouilles de riz|🍜|es|paquet|vermicelles|
+Tamari|🍶|es|bouteille|sauce soja sans gluten|
+Flocons de riz|🥣|es|paquet|sans gluten|
 Riz|🍚|es|kg||
 Semoule|🍚|es|paquet|couscous|
 Quinoa|🌾|es|paquet||
@@ -581,6 +605,8 @@ Pâte à tartiner|🍫|su|pot||
 Confiture|🫙|su|pot||
 Miel|🍯|su|pot||
 Biscuits|🍪|su|paquet|gateau|
+Biscuits sans gluten|🍪|su|paquet|gateau|
+Sirop d'érable|🍁|su|bouteille|vegan miel|
 Madeleines|🧁|su|paquet|gateau|
 Bonbons|🍬|su|sachet||
 Compote|🍏|su|pack||
@@ -595,6 +621,7 @@ Eau|💧|bs|pack|bouteille|
 Eau gazeuse|🫧|bs|bouteille||
 Jus d'orange|🧃|bs|l||
 Jus de pomme|🧃|bs|l||
+Jus de raisin|🧃|bs|l||
 Soda|🥤|bs|bouteille||
 Limonade|🥤|bs|bouteille||
 Sirop|🧃|bs|bouteille||
@@ -605,6 +632,7 @@ Rosé|🍷|bs|bouteille|alcool vin|
 Champagne|🍾|bs|bouteille|alcool|
 Kombucha|🧋|bs|bouteille||
 Glaces|🍨|sg|pc|creme glacee dessert|
+Sorbet|🍧|sg|pc|glace vegan|
 Pizza surgelée|🍕|sg|pc||
 Frites|🍟|sg|sachet||
 Légumes surgelés|🥦|sg|sachet||
@@ -1101,6 +1129,156 @@ const TYPE_OF = { "salade-figues-chevre": "e", "soupe-poireaux": "e", "veloute-p
 RECIPES.push(...MORE_RECIPES);
 RECIPES.forEach(r => { r.monthList = parseMonths(r.months); r.t = r.t || TYPE_OF[r.id] || "p"; });
 const recipeInSeason = (r, months) => r.monthList.some(m => months.includes(m));
+/* ---------- régimes alimentaires : recettes adaptées (substitutions) ou masquées ---------- */
+const DIETS = [
+  { id: "vege", label: "Végétarien", icon: "🥦", desc: "Ni viande ni poisson", no: ["meat", "fish"] },
+  { id: "vegan", label: "Végétalien (vegan)", icon: "🌱", desc: "Aucun produit animal", no: ["meat", "fish", "dairy", "egg", "honey"] },
+  { id: "pesce", label: "Pescétarien", icon: "🐟", desc: "Poisson oui, viande non", no: ["meat"] },
+  { id: "noporc", label: "Sans porc", icon: "🐖", desc: "Lardons, jambon, saucisses… remplacés par de la volaille", no: ["pork"] },
+  { id: "noalcool", label: "Sans alcool", icon: "🍷", desc: "Vin remplacé par du bouillon ou du jus de raisin", no: ["alcohol"] },
+  { id: "nolactose", label: "Sans lactose", icon: "🥛", desc: "Beurre, lait, crème, fromages en version végétale", no: ["dairy"] },
+  { id: "nogluten", label: "Sans gluten", icon: "🌾", desc: "Pâtes, pain, farine, pâtes à tarte sans gluten", no: ["gluten"] }
+];
+const DIET = Object.fromEntries(DIETS.map(d => [d.id, d]));
+const FLAGS = (() => {
+  const F = {};
+  const set = (flags, names) => names.split("|").forEach(n => { F[n] = (F[n] || []).concat(flags); });
+  set(["meat", "pork"], "Lardons|Bacon|Jambon|Jambon cru|Saucisses|Saucisson|Chorizo|Porc");
+  set(["meat"], "Bœuf|Viande hachée|Steaks hachés|Agneau|Poulet|Cuisses de poulet|Escalopes de dinde|Merguez|Lardons de dinde|Jambon de volaille|Saucisses de volaille|Bacon de dinde|Chorizo de volaille|Bresaola");
+  set(["fish"], "Saumon|Saumon fumé|Cabillaud|Crevettes|Moules|Huîtres|Surimi|Thon|Sardines|Poisson pané");
+  set(["alcohol"], "Vin blanc|Vin rouge|Rosé|Champagne|Bière");
+  set(["dairy"], "Beurre|Lait|Crème fraîche|Crème liquide|Crème dessert|Yaourts|Yaourts aux fruits|Fromage blanc|Skyr|Emmental râpé|Comté|Camembert|Mozzarella|Feta|Parmesan|Chèvre|Raclette|Reblochon|Glaces|Pâte à tartiner");
+  set(["egg"], "Œufs|Mayonnaise");
+  set(["honey"], "Miel");
+  set(["gluten"], "Pâtes|Farine|Pâte brisée|Pâte feuilletée|Pâte à pizza|Baguette|Pain de campagne|Pain de mie|Pain complet|Semoule|Biscuits|Tortillas|Nouilles|Flocons d'avoine|Sauce soja|Lait d'avoine|Bière|Brioche|Biscottes|Croissants|Madeleines");
+  return F;
+})();
+// remplaçants, par ordre de préférence ; "-" = l'ingrédient peut simplement être retiré
+const SUBS = {
+  "Lardons": ["Lardons de dinde", "Tofu fumé"], "Bacon": ["Bacon de dinde", "Tofu fumé"],
+  "Jambon": ["Jambon de volaille", "Champignons"], "Jambon cru": ["Bresaola", "-"],
+  "Saucisses": ["Saucisses de volaille", "Saucisses végétales"], "Saucisson": ["Bresaola", "-"],
+  "Chorizo": ["Chorizo de volaille", "Pois chiches"], "Porc": ["Escalopes de dinde", "Tofu"],
+  "Bœuf": ["Haché végétal"], "Viande hachée": ["Haché végétal"], "Agneau": ["Pois chiches"],
+  "Poulet": ["Tofu"], "Cuisses de poulet": ["Tofu"], "Escalopes de dinde": ["Tofu"],
+  "Saumon": ["Tofu"], "Cabillaud": ["Tofu"], "Thon": ["Pois chiches"], "Saumon fumé": ["-"], "Crevettes": ["-"],
+  "Vin blanc": ["Bouillon"], "Vin rouge": ["Jus de raisin"],
+  "Beurre": ["Margarine"], "Lait": ["Lait d'avoine", "Lait d'amande"],
+  "Crème fraîche": ["Crème végétale"], "Crème liquide": ["Crème végétale"],
+  "Emmental râpé": ["Fromage végétal"], "Parmesan": ["Fromage végétal"], "Comté": ["Fromage végétal"],
+  "Mozzarella": ["Fromage végétal"], "Feta": ["Fromage végétal"], "Chèvre": ["Fromage végétal"],
+  "Yaourts": ["Yaourts végétaux"], "Fromage blanc": ["Yaourts végétaux"], "Glaces": ["Sorbet"], "Pâte à tartiner": ["Confiture"],
+  "Miel": ["Sirop d'érable"],
+  "Pâtes": ["Pâtes sans gluten"], "Farine": ["Farine sans gluten"], "Pâte brisée": ["Pâte sans gluten"], "Pâte feuilletée": ["Pâte sans gluten"],
+  "Pâte à pizza": ["Pâte sans gluten"], "Baguette": ["Pain sans gluten"], "Pain de campagne": ["Pain sans gluten"], "Pain de mie": ["Pain sans gluten"],
+  "Pain complet": ["Pain sans gluten"], "Semoule": ["Quinoa"], "Biscuits": ["Biscuits sans gluten"], "Tortillas": ["Tortillas de maïs"],
+  "Nouilles": ["Nouilles de riz"], "Flocons d'avoine": ["Flocons de riz"], "Sauce soja": ["Tamari"]
+};
+// ingrédients qui font le plat : s'ils sont exclus, la recette est masquée
+const CORE = {
+  "pot-au-feu": ["Bœuf"], "boeuf-bourguignon": ["Bœuf"], "navarin-printanier": ["Agneau"], "agneau-puree-petits-pois": ["Agneau"],
+  "moules-marinieres": ["Moules"], "huitres-pain-seigle": ["Huîtres"], "melon-jambon": ["Jambon cru"],
+  "tartiflette": ["Reblochon"], "raclette": ["Raclette"], "tomates-mozza": ["Mozzarella"], "asperges-oeufs": ["Œufs"]
+};
+// ingrédients facultatifs, retirables si le régime les exclut
+const OPTIONAL = { "riz-cantonais": ["Œufs", "Jambon", "Crevettes"], "salade-nicoise": ["Œufs", "Thon"], "salade-pdt-nouvelles": ["Œufs"] };
+
+// quantités quand l'unité ne se transpose pas (base 4 personnes)
+const QCONV = {
+  "Cuisses de poulet>Tofu": [2, "pc"], "Escalopes de dinde>Tofu": [2, "pc"], "Poulet>Tofu": [2, "pc"], "Porc>Tofu": [2, "pc"],
+  "Saumon>Tofu": [2, "pc"], "Cabillaud>Tofu": [2, "pc"], "Agneau>Pois chiches": [2, "boite"], "Thon>Pois chiches": [1, "boite"],
+  "Chorizo>Pois chiches": [1, "boite"], "Jambon>Champignons": [250, "g"], "Lardons>Tofu fumé": [1, "pc"], "Bacon>Tofu fumé": [1, "pc"]
+};
+const curDiets = () => (S.cat && Array.isArray(S.cat.diets) ? S.cat.diets.filter(d => DIET[d]) : []);
+const dietSig = diets => diets.slice().sort().join("+");
+function forbiddenOf(diets) { const f = new Set(); diets.forEach(d => (DIET[d] ? DIET[d].no : []).forEach(x => f.add(x))); return f; }
+const violates = (name, forb) => (FLAGS[name] || []).some(x => forb.has(x));
+// renommages avec le bon article (« aux lardons » → « au tofu fumé »…)
+const NAME_RULES = [
+  ["Lardons", "Tofu fumé", /aux lardons/i, "au tofu fumé"],
+  ["Jambon", "Champignons", /au jambon/i, "aux champignons"],
+  ["Chorizo", "Pois chiches", /au chorizo/i, "aux pois chiches"],
+  ["Porc", "Escalopes de dinde", /Côtes de porc/, "Escalopes de dinde"],
+  ["Porc", "Tofu", /Côtes de porc/, "Tofu"],
+  ["Cuisses de poulet", "Tofu", /^Poulet/, "Tofu"],
+  ["Escalopes de dinde", "Tofu", /^Poulet/, "Tofu"]
+];
+function renameWith(name, from, to) {
+  const rule = NAME_RULES.find(x => x[0] === from && x[1] === to && x[2].test(name));
+  if (rule) return name.replace(rule[2], rule[3]);
+  const re = new RegExp("(^|[^a-zà-ÿœæ])(" + from.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")(?![a-zà-ÿœæ])", "i");
+  return name.replace(re, (m, pre, word) => pre + (word[0] === word[0].toUpperCase() ? to : to[0].toLowerCase() + to.slice(1)));
+}
+const _adapt = {};
+function adaptRecipe(r, diets) {
+  diets = diets || curDiets();
+  const sig = dietSig(diets);
+  const cache = _adapt[sig] || (_adapt[sig] = {});
+  if (cache[r.id]) return cache[r.id];
+  if (!diets.length) return (cache[r.id] = Object.assign(Object.create(r), { ok: true, subs: [], diets: [] }));
+  const forb = forbiddenOf(diets);
+  const core = CORE[r.id] || [], opt = OPTIONAL[r.id] || [];
+  let ok = true, name = r.name;
+  const subs = [], ing = [];
+  for (const it of r.ing) {
+    const [n] = it;
+    if (!violates(n, forb)) { ing.push(it); continue; }
+    if (core.includes(n)) { ok = false; break; }
+    const cand = (SUBS[n] || []).find(c => c === "-" || !violates(c, forb));
+    if (cand === "-" || (!cand && opt.includes(n))) { subs.push([n, null]); continue; }
+    if (!cand) { ok = false; break; }
+    subs.push([n, cand]);
+    name = renameWith(name, n, cand);
+    const cv = QCONV[n + ">" + cand];
+    const row = cv ? [cand, Math.max(1, Math.round(cv[0] * r.serves / 4)), cv[1], it[3]] : [cand, it[1], it[2], it[3]];
+    if (!ing.some(x => x[0] === cand)) ing.push(row);
+  }
+  return (cache[r.id] = Object.assign(Object.create(r), { ok, name, ing: ok ? ing : r.ing, subs, diets: diets.slice() }));
+}
+const REC = diets => RECIPES.map(r => adaptRecipe(r, diets)).filter(r => r.ok);
+function getRecipe(id, diets) { const r = RECIPES.find(x => x.id === id); return r ? adaptRecipe(r, diets) : null; }
+function dietsLine() {
+  const ds = curDiets();
+  const hidden = RECIPES.length - REC().length;
+  return `<button class="dietbar" data-act="diets">${ds.length ? ds.map(d => `<span>${DIET[d].icon} ${esc(DIET[d].label)}</span>`).join("") : `<span>🍽️ Aucun régime particulier</span>`}<em>${ds.length && hidden ? hidden + " recette" + (hidden > 1 ? "s" : "") + " masquée" + (hidden > 1 ? "s" : "") + " · " : ""}Modifier</em></button>`;
+}
+function subsBox(r) {
+  if (!r.subs || !r.subs.length) return "";
+  return `<div class="note-box" style="margin:0 0 12px"><b>🔄 Adaptée à ton régime (${r.diets.map(d => DIET[d].label.toLowerCase()).join(", ")})</b><br>` +
+    r.subs.map(([a, b]) => b ? `${esc(a)} → <b>${esc(b)}</b>` : `${esc(a)} : à retirer`).join(" · ") +
+    `<br><span style="font-size:12px">Les étapes s'appliquent telles quelles avec les remplaçants.</span></div>`;
+}
+function dietSheet() {
+  const sel = new Set(curDiets());
+  const body = () => `<div class="grab"></div>
+    <div class="shead"><span class="bigico">🥗</span><div class="tt"><h3>Régime alimentaire</h3><div class="sub">Les recettes s'adaptent ou se masquent</div></div></div>
+    <div class="menu">${DIETS.map(d => `<label class="ing${sel.has(d.id) ? " on" : ""}" style="opacity:1"><input type="checkbox" data-diet="${d.id}" ${sel.has(d.id) ? "checked" : ""}>
+      <span class="box"></span><span class="iic">${d.icon}</span><span class="inm">${esc(d.label)}<small>${esc(d.desc)}</small></span></label>`).join("")}</div>
+    <div class="note-box">Exemple : « Sans porc » + « Sans alcool » remplace les lardons par des lardons de dinde et le vin par du bouillon. Les plats impossibles à adapter (pot-au-feu en végétarien…) sont masqués.</div>
+    <div class="sacts"><button class="btn" data-act="close">Annuler</button><button class="btn primary" data-act="save">Enregistrer</button></div>`;
+  openSheet(body(), sh => {
+    sh.onchange = e => {
+      const id = e.target.dataset.diet; if (!id) return;
+      if (e.target.checked) { sel.add(id); if (id === "vegan") { sel.delete("vege"); sel.delete("pesce"); } if (id === "vege") { sel.delete("pesce"); sel.delete("vegan"); } if (id === "pesce") { sel.delete("vege"); sel.delete("vegan"); } }
+      else sel.delete(id);
+      const y = sh.scrollTop; sh.innerHTML = body(); sh.scrollTop = y;
+    };
+    sh.onclick = e => {
+      const a = e.target.closest("[data-act]"); if (!a) return;
+      if (a.dataset.act === "close") closeSheet();
+      if (a.dataset.act === "save") {
+        const arr = DIETS.map(d => d.id).filter(id => sel.has(id));
+        S.store.saveDiets(arr);
+        S.cat = Object.assign({}, S.cat, { diets: arr });
+        closeSheet();
+        toast(arr.length ? "🥗 Recettes adaptées à ton régime" : "Régime réinitialisé");
+        if (S.searching) renderSearch();
+        if (S.cur && !S.searching) renderItems();
+      }
+    };
+  });
+}
+
 /* ---------- recettes de la semaine (change chaque lundi, identique pour tout le monde) ---------- */
 const WEEK0 = new Date(2024, 0, 1); // un lundi
 const TYPE_LABEL = { e: "Entrée", p: "Plat", d: "Dessert" };
@@ -1123,7 +1301,7 @@ function seededShuffle(arr, seed) {
 function weekPicks(wi, avoid) {
   const mid = new Date(WEEK0); mid.setDate(mid.getDate() + wi * 7 + 3);
   const m = mid.getMonth() + 1;
-  const pool = seededShuffle(RECIPES.filter(r => recipeInSeason(r, [m])), wi + 7);
+  const pool = seededShuffle(REC().filter(r => recipeInSeason(r, [m])), wi + 7);
   const fresh = r => !(avoid && avoid.has(r.id));
   const seasonal = r => r.monthList.length < 12;
   const out = [];
@@ -1145,8 +1323,9 @@ function weekPicks(wi, avoid) {
 // Chaîne déterministe depuis une semaine de départ fixe : chaque semaine évite les 2 précédentes,
 // et tout le monde obtient la même sélection, quel que soit le jour où l'app est ouverte.
 const WEEK_ANCHOR = weekIndex(new Date(2026, 10, 2));
-const _weekCache = {};
+const _weekCaches = {};
 function picksFor(wi) {
+  const _weekCache = _weekCaches[dietSig(curDiets())] || (_weekCaches[dietSig(curDiets())] = {});
   if (_weekCache[wi]) return _weekCache[wi];
   if (wi <= WEEK_ANCHOR) return (_weekCache[wi] = weekPicks(wi));
   let k = wi;
@@ -1176,7 +1355,7 @@ function recipeCard(r) {
   return `<button class="rcard" data-recipe="${r.id}">
     <span class="rem">${r.icon}</span>
     <span class="rinfo"><b>${esc(r.name)}</b>
-      <span>${TYPE_LABEL[r.t] || "Plat"} · ⏱ ${esc(r.time)}${ok && nSeason ? ` · <span class="rs">🌱 ${nSeason} de saison</span>` : ""}</span></span>
+      <span>${TYPE_LABEL[r.t] || "Plat"} · ⏱ ${esc(r.time)}${ok && nSeason ? ` · <span class="rs">🌱 ${nSeason} de saison</span>` : ""}${r.subs && r.subs.length ? ` · <span class="rs">🔄 adaptée</span>` : ""}</span></span>
   </button>`;
 }
 function weekHead() {
@@ -1189,16 +1368,16 @@ function recipesBlock(compact) {
   if (compact) {
     return week.length ? `<div class="sectitle">🍲 Recettes de la semaine · ${weekRange(weekIndex(new Date()))}</div><div class="rrow">${week.map(recipeCard).join("")}</div>` : "";
   }
-  let html = weekHead();
+  let html = weekHead() + dietsLine();
   html += `<div class="rlist">${week.map(recipeCard).join("")}</div>`;
-  const others = RECIPES.filter(r => recipeInSeason(r, [m]) && !week.includes(r));
+  const others = REC().filter(r => recipeInSeason(r, [m]) && !week.includes(r));
   const seasonalOthers = others.filter(r => r.monthList.length < 12), always = others.filter(r => r.monthList.length === 12);
   if (seasonalOthers.length) html += `<div class="sectitle" style="margin-top:16px">Aussi de saison en ${MONTHS[m - 1]} · ${seasonalOthers.length}</div><div class="rlist">${seasonalOthers.map(recipeCard).join("")}</div>`;
   if (always.length) html += `<div class="sectitle" style="margin-top:16px">Toute l'année · ${always.length}</div><div class="rlist">${always.map(recipeCard).join("")}</div>`;
   const cur = curSeason();
   const order = SEASONS.slice(SEASONS.indexOf(cur) + 1).concat(SEASONS.slice(0, SEASONS.indexOf(cur) + 1));
   order.forEach(x => {
-    const rs = RECIPES.filter(r => !recipeInSeason(r, [m]) && recipeInSeason(r, x.months) && !html.includes(`data-recipe="${r.id}"`));
+    const rs = REC().filter(r => !recipeInSeason(r, [m]) && recipeInSeason(r, x.months) && !html.includes(`data-recipe="${r.id}"`));
     if (rs.length) html += `<div class="sectitle" style="margin-top:16px">${x.icon} ${x.label} · ${rs.length}</div><div class="rlist">${rs.map(recipeCard).join("")}</div>`;
   });
   return html;
@@ -1206,12 +1385,15 @@ function recipesBlock(compact) {
 function searchRecipes(nq) {
   if (nq.length < 3) return [];
   if (/^recet/.test(nq) || /^semaine/.test(nq)) return weeklyRecipes();
-  return RECIPES.filter(r => norm(r.name).includes(nq) || r.ing.some(i => norm(i[0]).startsWith(nq) && !i[3]))
+  const dq = DIETS.find(d => norm(d.label).startsWith(nq));
+  if (dq && nq.length >= 4) return weeklyRecipes();
+  return REC().filter(r => norm(r.name).includes(nq) || r.ing.some(i => norm(i[0]).startsWith(nq) && !i[3]))
     .sort((a, b) => recipeInSeason(b, [nowMonth()]) - recipeInSeason(a, [nowMonth()]));
 }
 
 function recipeSheet(id) {
-  const r = RECIPES.find(x => x.id === id); if (!r) return;
+  const r = getRecipe(id); if (!r) return;
+  if (!r.ok) { toast("Recette incompatible avec ton régime"); return; }
   let serves = r.serves;
   const sel = {};
   r.ing.forEach(([name, , , pantry]) => { const pid = keyOf(name); sel[pid] = !pantry && !openItemFor(pid); });
@@ -1229,6 +1411,7 @@ function recipeSheet(id) {
   const body = () => `<div class="grab"></div>
     <div class="shead"><span class="bigico">${r.icon}</span><div class="tt"><h3>${esc(r.name)}</h3>
       <div class="sub">⏱ ${esc(r.time)} · ${recipeInSeason(r, [nowMonth()]) ? "🌱 de saison" : "saison : " + esc(monthRange(r.monthList))}</div></div></div>
+    ${subsBox(r)}
     ${menuOf()[r.id] ? `<button class="banner" data-act="detail" style="width:100%;text-align:left;margin:0 0 14px;display:flex;align-items:center;gap:10px"><span style="font-size:22px">📌</span><span style="flex:1"><b>Déjà au menu de cette liste</b><br><span style="color:var(--muted);font-size:13px">Ouvrir la fiche détaillée</span></span><span>›</span></button>` : ""}
     <div class="row" style="justify-content:space-between"><span class="lbl" style="margin:0">Ingrédients</span>
       <span class="qty" style="gap:6px"><button data-act="less" style="width:38px;height:38px;font-size:20px">−</button><b style="min-width:84px;text-align:center">${serves} pers.</b><button data-act="more" style="width:38px;height:38px;font-size:20px">+</button></span></div>
@@ -1271,7 +1454,7 @@ function addRecipe(r, serves, sel) {
       note: r.icon + " " + r.name, recipe: r.id, checked: false, addedBy: S.store.me.name, addedByUid: S.store.uid });
   });
   if (adds.length || updates.length) S.store.addMany(S.cur, adds, updates);
-  S.store.setMenu(S.cur, r.id, { serves, at: Date.now(), by: S.store.me.name });
+  S.store.setMenu(S.cur, r.id, { serves, at: Date.now(), by: S.store.me.name, diets: r.diets || [] });
   closeSheet();
   toast("Ajoutée au menu · " + `${r.icon} ${adds.length} ingrédient${adds.length > 1 ? "s" : ""} ajouté${adds.length > 1 ? "s" : ""}` + (merged ? ` · ${merged} déjà dans la liste` : ""));
 }
@@ -1318,11 +1501,11 @@ function menuProgress(r) {
 }
 function menuBlock() {
   const menu = menuOf();
-  const ids = Object.keys(menu).filter(id => RECIPES.some(r => r.id === id))
+  const ids = Object.keys(menu).filter(id => getRecipe(id))
     .sort((a, b) => (menu[a].at || 0) - (menu[b].at || 0));
   if (!ids.length) return "";
   return `<div class="sectitle" style="margin-top:4px">🍲 Au menu · ${ids.length}</div><div class="rrow">` + ids.map(id => {
-    const r = RECIPES.find(x => x.id === id), m = menu[id], pr = menuProgress(r);
+    const m = menu[id], r = getRecipe(id, m.diets || []), pr = menuProgress(r);
     const pct = pr.total ? Math.round(pr.got / pr.total * 100) : 0;
     return `<button class="rcard" data-menu="${id}"><span class="rem">${r.icon}</span><span class="rinfo"><b>${esc(r.name)}</b>
       <span>${m.serves} pers. · ⏱ ${esc(r.time)} · ${pr.got}/${pr.total} pris</span>
@@ -1338,7 +1521,7 @@ async function keepAwake(on) {
   } catch (e) {}
 }
 function menuSheet(id) {
-  const r = RECIPES.find(x => x.id === id); if (!r) return;
+  const r = getRecipe(id, (menuOf()[id] && menuOf()[id].diets) || []); if (!r) return;
   const d = RDETAILS[id] || r.d || {};
   const lid = S.cur;
   let serves = (menuOf()[id] && menuOf()[id].serves) || r.serves;
@@ -1352,6 +1535,7 @@ function menuSheet(id) {
     return `<div class="grab"></div>
     <div class="shead"><span class="bigico">${r.icon}</span><div class="tt"><h3>${esc(r.name)}</h3>
       <div class="sub">Au menu · ${pr.got}/${pr.total} ingrédients pris</div></div></div>
+    ${subsBox(r)}
     <div class="facts">
       <div><b>${esc(d.level || "Facile")}</b><span>Niveau</span></div>
       <div><b>${esc(d.prep || r.time)}</b><span>Préparation</span></div>
@@ -1486,6 +1670,7 @@ function localStore() {
     saveProduct(pid, p) { data.cat.products[pid] = p; save(); },
     deleteProduct(pid) { delete data.cat.products[pid]; save(); },
     saveUnit(id, u) { data.cat.units[id] = u; save(); },
+    saveDiets(arr) { data.cat.diets = arr; save(); },
     deleteUnit(id) { delete data.cat.units[id]; save(); },
     bump(pid, unit, qty) { data.cat.freq[pid] = (data.cat.freq[pid] || 0) + 1; data.cat.last[pid] = { u: unit, q: qty }; save(); },
     clearAll() { lsSet(LOCAL_KEY, null); }
@@ -1605,6 +1790,7 @@ function remoteStore(user) {
     saveProduct(pid, p) { run(F.setDoc(catRef, { products: { [pid]: p } }, { merge: true })); },
     deleteProduct(pid) { run(F.updateDoc(catRef, { ["products." + pid]: F.deleteField() })); },
     saveUnit(id, u) { run(F.setDoc(catRef, { units: { [id]: u } }, { merge: true })); },
+    saveDiets(arr) { run(F.setDoc(catRef, { diets: arr }, { merge: true })); },
     deleteUnit(id) { run(F.updateDoc(catRef, { ["units." + id]: F.deleteField() })); },
     bump(pid, unit, qty) { F.setDoc(catRef, { freq: { [pid]: F.increment(1) }, last: { [pid]: { u: unit, q: qty } } }, { merge: true }).catch(() => {}); }
   };
@@ -1686,7 +1872,7 @@ function attachStore(store) {
   stopAll();
   S.store = store;
   if (store.watchPush) S.unsubPush = store.watchPush(d => { PUSH.data = d || {}; });
-  S.unsubCat = store.watchCatalog(c => { S.cat = Object.assign({ products: {}, units: {}, freq: {}, last: {} }, c); if (S.searching) renderSearch(); });
+  S.unsubCat = store.watchCatalog(c => { S.cat = Object.assign({ products: {}, units: {}, freq: {}, last: {} }, c); if (S.searching) renderSearch(); else if (S.cur) renderItems(); });
   let first = true;
   S.unsubLists = store.watchLists(lists => {
     S.lists = lists.sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
@@ -2088,7 +2274,7 @@ function seasonBlock(key) {
   const sortFn = (a, b) => (inSeasonNow(b.pid) - inSeasonNow(a.pid)) || a.name.localeCompare(b.name, "fr");
   let recs = "";
   if (key === "saison") recs = recipesBlock(true);
-  else { const rs = RECIPES.filter(r => recipeInSeason(r, months)); if (rs.length) recs = `<div class="sectitle">🍲 Recettes · ${rs.length}</div><div class="rrow">${rs.map(recipeCard).join("")}</div>`; }
+  else { const rs = REC().filter(r => recipeInSeason(r, months)); if (rs.length) recs = `<div class="sectitle">🍲 Recettes · ${rs.length}</div><div class="rrow">${rs.map(recipeCard).join("")}</div>`; }
   return `<div class="seasonhead"><b>${esc(title)}</b><br><span style="color:var(--muted)">${esc(sub)}</span></div>` + recs +
     groups.filter(g => g[1].length).map(([t, list]) => `<div class="sectitle">${t} · ${list.length}</div><div class="grid" style="margin-bottom:14px">${list.sort(sortFn).map(ptileHTML).join("")}</div>`).join("");
 }
@@ -2096,6 +2282,7 @@ $("#searchView").addEventListener("click", e => {
   const c = e.target.closest("[data-chip]");
   if (c) { S.chip = c.dataset.chip; renderSearch(); return; }
   if (e.target.closest("[data-create]")) { createSheet(S.q.trim()); return; }
+  if (e.target.closest("[data-act=diets]")) { dietSheet(); return; }
   const rc = e.target.closest("[data-recipe]");
   if (rc) { recipeSheet(rc.dataset.recipe); return; }
   const t = e.target.closest("[data-pid]");
@@ -2387,6 +2574,7 @@ function accountSheet() {
     <div class="menu">
       ${st.kind === "remote" ? `<button data-act="push"><span class="mi">${pushOnHere() ? "🔔" : "🔕"}</span>Notifications <span style="color:var(--muted);font-weight:400;margin-left:auto;font-size:13px">${pushOnHere() ? "activées" : "désactivées"} sur cet appareil</span></button>` : ""}
       <button data-act="kofi"><span class="mi">☕</span>Soutenir Cabas sur Ko-fi</button>
+      <button data-act="diets"><span class="mi">🥗</span>Régime alimentaire <span style="color:var(--muted);font-weight:400;margin-left:auto;font-size:13px">${curDiets().map(d => DIET[d].icon).join(" ") || "aucun"}</span></button>
       <button data-act="catalog"><span class="mi">🏷️</span>Mes produits & unités <span style="color:var(--muted);font-weight:400;margin-left:auto">${nProd + nUnit || ""}</span></button>
       ${!isStandalone() ? `<button data-act="install"><span class="mi">📲</span>Installer l'app</button>` : ""}
       ${st.kind === "local" && canFirebase ? `<button data-act="google"><span class="mi">🔐</span>Se connecter avec Google <span style="color:var(--muted);font-weight:400;font-size:12px;margin-left:auto">tes listes suivent</span></button>` : ""}
@@ -2397,6 +2585,7 @@ function accountSheet() {
       const act = a.dataset.act;
       if (act === "kofi") { window.open(KOFI, "_blank", "noopener"); closeSheet(); }
       else if (act === "catalog") replaceSheet(catalogSheet);
+      else if (act === "diets") replaceSheet(dietSheet);
       else if (act === "install") { replaceSheet(installApp); }
       else if (act === "google") { closeSheet(); signIn(); }
       else if (act === "out") { closeSheet(); Object.keys(NQ).forEach(l => flushNotify(l, true)); if (lsGet("cabas.pushKey")) await disablePush(true); lsSet("cabas.mode", "out"); await fb.au.signOut(auth); }
